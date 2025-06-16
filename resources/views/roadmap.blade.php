@@ -36,13 +36,13 @@
 
         <!-- Trello Embed -->
         <div class="w-full aspect-[4/3]">
-            <iframe
-                src="https://trello.com/b/6w7tMciD.html"
-                width="100%"
-                height="600"
-                frameborder="0"
-                class="rounded-lg shadow-lg border border-gray-800">
-            </iframe>
+            <div class="text-center mt-8">
+                <a href="https://trello.com/b/6w7tMciD/surfsup-roadmap"
+                   target="_blank"
+                   class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition">
+                    Roadmap on Trello
+                </a>
+            </div>
         </div>
     </div>
 </main>
