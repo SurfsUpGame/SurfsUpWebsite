@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>SurfsUp Roadmap</title>
-    @vite('resources/css/app.css') {{-- or whatever CSS your app uses --}}
     @livewireStyles
     @filamentStyles
 </head>
