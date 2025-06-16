@@ -58,6 +58,11 @@ class RoadmapBoardPage extends KanbanBoardPage
             ]);
     }
 
+    public function getReorderable(): bool
+    {
+        return Auth::check();
+    }
+
     public function createAction(Action $action): ?Action
     {
         if (!Auth::check()) {
