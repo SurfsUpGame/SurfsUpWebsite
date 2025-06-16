@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SurfsUp</title>
-    <link rel="icon" type="image/x-icon" href="{{ asset('/storage/img/favicon.ico') }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('/img/favicon.ico') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://kit.fontawesome.com/d251d3e9b0.js" crossorigin="anonymous"></script>
     <style>
         .parallax {
-            background-image: url('/storage/img/surfsup-hero.png');
+            background-image: url('/img/surfsup-hero.png');
             min-height: 100vh;
             background-attachment: fixed;
             background-position: center;
