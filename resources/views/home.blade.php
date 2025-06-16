@@ -45,7 +45,7 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M16 18l6-6-6-6M8 6l-6 6 6 6" />
                     </svg>
-                    SDK Project
+                    Map Making SDK
                 </a>
 
                 <a href="https://trello.com/b/6w7tMciD/surfsup-roadmap" target="_blank" class="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 px-6 py-3 rounded-lg text-white transition">
@@ -152,7 +152,7 @@
     <section class="py-16 bg-gray-900 px-6">
         <div class="max-w-4xl mx-auto text-center">
             <h2 class="text-3xl font-bold text-white mb-4">Checkout Mark's First Game</h2>
-            <p class="text-gray-300 mb-6">A competitive 2D roguelike auto shooter <strong>SurvivalScape</strong> available on Steam.</p>
+            <p class="text-gray-300 mb-6">A competitive 2D roguelike auto shooter <strong>SurvivalScape</strong> is available on Steam.</p>
 
             <!-- Steam Widget Embed -->
             <div class="max-w-2xl mx-auto">
