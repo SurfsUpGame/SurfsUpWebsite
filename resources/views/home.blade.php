@@ -148,9 +148,39 @@
         </div>
     </section>
 
+    <!-- SurvivalScape Promo Section -->
+    <section class="py-16 bg-gray-900 px-6">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl font-bold text-white mb-4">Checkout Mark's First Game</h2>
+            <p class="text-gray-300 mb-6">A competitive 2D roguelike auto shooter <strong>SurvivalScape</strong> available on Steam.</p>
+
+            <!-- Steam Widget Embed -->
+            <div class="max-w-2xl mx-auto">
+                <iframe
+                    src="https://store.steampowered.com/widget/2862660/"
+                    frameborder="0"
+                    width="100%"
+                    height="190"
+                    class="rounded-lg shadow-lg border-gray-800">
+                </iframe>
+            </div>
+        </div>
+    </section>
+
+
     <!-- Footer -->
     <footer class="bg-gray-900 py-6 text-center text-sm text-gray-400">
         &copy; {{ date('Y') }} Mark Arneman. All rights reserved.
     </footer>
+
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-H68DQ85G4C"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-H68DQ85G4C');
+    </script>
 </body>
 </html>
