@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>SurfsUp Roadmap</title>
-    @vite('resources/css/app.css') {{-- or whatever CSS your app uses --}}
+    <link rel="icon" type="image/x-icon" href="{{ asset('/img/favicon.ico') }}">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
     @filamentStyles
 </head>
