@@ -1,4 +1,4 @@
-FROM php:8.2-fpm
+FROM php:8.3-fpm
 
 # Install system dependencies and PHP extensions
 RUN apt-get update && apt-get install -y \
@@ -21,7 +21,7 @@ COPY . .
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Optional: pre-install Laravel and Vite dependencies
+RUN git config --global --add safe.directory /var/www/html
 RUN composer install
 RUN npm install && npm run build
 
