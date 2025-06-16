@@ -22,7 +22,8 @@ Route::get('/', function () {
 
 // Route::get('login', \App\Http\Controllers\Auth\SteamAuthController::class)->name('login');
 Route::get('/roadmap', function () {
-    return view('public-roadmap');
-})->name('roadmap');
+    return view('roadmap');
+});
+
 
 // require __DIR__.'/auth.php';

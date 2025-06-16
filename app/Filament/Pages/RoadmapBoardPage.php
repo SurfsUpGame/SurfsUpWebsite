@@ -22,45 +22,76 @@ class RoadmapBoardPage extends KanbanBoardPage
 
     public function mount(): void
     {
-        $this
-            ->titleField('title')
-            ->orderField('sort_order')
-            ->columnField('status')
-            ->columns([
-                'ideas' => 'Ideas',
-                'backlog' => 'Backlog',
-                'todo' => 'To Do',
-                'in_progress' => 'In Progress',
-                'completed' => 'Completed',
-            ])
-            ->columnColors([
-                'ideas' => 'neutral',
-                'backlog' => 'red',
-                'todo' => 'blue',
-                'in_progress' => 'yellow',
-                'completed' => 'green',
-            ])
-            ->descriptionField('description')
-            ->orderField('order_column')
-            ->cardLabel('Task')
-            ->pluralCardLabel('Tasks')
-            ->cardAttributes([
-                'due_date' => 'Due Date',
-                'assignee.name' => 'Assigned To',
-            ])
-            ->cardAttributeColors([
-                'due_date' => 'red',
-                'assignee.name' => 'yellow',
-            ])
-            ->cardAttributeIcons([
-                'due_date' => 'heroicon-o-calendar',
-                'assignee.name' => 'heroicon-o-user',
-            ]);
-    }
-
-    public function getReorderable(): bool
-    {
-        return Auth::check();
+        if (Auth::check()) {
+            $this
+                ->titleField('title')
+                ->orderField('sort_order')
+                ->columnField('status')
+                ->columns([
+                    'ideas' => 'Ideas',
+                    'backlog' => 'Backlog',
+                    'todo' => 'To Do',
+                    'in_progress' => 'In Progress',
+                    'completed' => 'Completed',
+                ])
+                ->columnColors([
+                    'ideas' => 'neutral',
+                    'backlog' => 'red',
+                    'todo' => 'blue',
+                    'in_progress' => 'yellow',
+                    'completed' => 'green',
+                ])
+                ->descriptionField('description')
+                ->orderField('order_column')
+                ->cardLabel('Task')
+                ->pluralCardLabel('Tasks')
+                ->cardAttributes([
+                    'due_date' => 'Due Date',
+                    'assignee.name' => 'Assigned To',
+                ])
+                ->cardAttributeColors([
+                    'due_date' => 'red',
+                    'assignee.name' => 'yellow',
+                ])
+                ->cardAttributeIcons([
+                    'due_date' => 'heroicon-o-calendar',
+                    'assignee.name' => 'heroicon-o-user',
+                ]);
+        } else {
+            $this
+                ->titleField('title')
+                ->columnField('status')
+                ->columns([
+                    'ideas' => 'Ideas',
+                    'backlog' => 'Backlog',
+                    'todo' => 'To Do',
+                    'in_progress' => 'In Progress',
+                    'completed' => 'Completed',
+                ])
+                ->columnColors([
+                    'ideas' => 'neutral',
+                    'backlog' => 'red',
+                    'todo' => 'blue',
+                    'in_progress' => 'yellow',
+                    'completed' => 'green',
+                ])
+                ->descriptionField('description')
+                ->orderField('order_column')
+                ->cardLabel('Task')
+                ->pluralCardLabel('Tasks')
+                ->cardAttributes([
+                    'due_date' => 'Due Date',
+                    'assignee.name' => 'Assigned To',
+                ])
+                ->cardAttributeColors([
+                    'due_date' => 'red',
+                    'assignee.name' => 'yellow',
+                ])
+                ->cardAttributeIcons([
+                    'due_date' => 'heroicon-o-calendar',
+                    'assignee.name' => 'heroicon-o-user',
+                ]);
+        }
     }
 
     public function createAction(Action $action): ?Action
