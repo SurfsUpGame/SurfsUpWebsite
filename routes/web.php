@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PublicRoadmapController;
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 
@@ -22,6 +23,8 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::get('login', \App\Http\Controllers\Auth\SteamAuthController::class)->name('login');
-Route::get('roadmap', \App\Livewire\RoadmapBoard::class)->name('roadmap');
+Route::get('/roadmap', function () {
+    return view('public-roadmap');
+})->name('roadmap');
 
 require __DIR__.'/auth.php';

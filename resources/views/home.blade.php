@@ -6,6 +6,7 @@
     <title>SurfsUp</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('/storage/img/favicon.ico') }}">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/d251d3e9b0.js" crossorigin="anonymous"></script>
     <style>
         .parallax {
             background-image: url('/storage/img/surfsup-hero.png');
@@ -21,11 +22,11 @@
 
     <!-- Header -->
     <header class="fixed top-0 left-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-black bg-opacity-0 backdrop-blur-md text-white shadow-md">
-        <h1 class="text-2xl font-bold">🌊 SurfsUp</h1>
+        <h1 class="text-2xl font-bold"><a href="/">🌊 SurfsUp</a></h1>
 
-        <a href="{{ route('login') }}" class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg transition">
-            Login with Steam
-        </a>
+{{--        <a href="{{ route('login') }}" class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg transition">--}}
+{{--            Login with Steam--}}
+{{--        </a>--}}
     </header>
 
     <!-- Parallax Hero -->
@@ -58,42 +59,87 @@
         </div>
     </section>
 
+    <!-- Embedded Media Panel -->
+    <section class="bg-gray-900 py-16 px-6">
+        <div class="max-w-6xl mx-auto text-center mb-10">
+            <h2 class="text-3xl font-bold text-white mb-4">Watch & Wishlist</h2>
+            <p class="text-gray-300">Catch the trailer, wishlist SurfsUp on Steam, and join our community on Discord!</p>
+        </div>
+
+        <div class="flex flex-col lg:flex-row justify-center gap-8 max-w-6xl mx-auto">
+            <!-- Left Column: YouTube + Steam -->
+            <div class="flex-1 space-y-6">
+                <!-- YouTube Embed -->
+                <div class="w-full aspect-video rounded-lg overflow-hidden">
+                    <iframe
+                        class="w-full h-full"
+                        src="https://www.youtube.com/embed/j2XA7omfhUc"
+                        title="SurfsUp Trailer"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+
+                <!-- Steam Widget -->
+                <iframe
+                    src="https://store.steampowered.com/widget/3454830/"
+                    frameborder="0"
+                    width="100%"
+                    height="190"
+                    class="rounded-lg w-full">
+                </iframe>
+            </div>
+
+            <!-- Right Column: Discord -->
+            <div class="flex-1">
+                <iframe
+                    src="https://discord.com/widget?id=1243644214105997373&theme=dark"
+                    width="100%"
+                    height="550"
+                    allowtransparency="true"
+                    frameborder="0"
+                    sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+                    class="rounded-lg w-full">
+                </iframe>
+            </div>
+        </div>
+    </section>
+
+
+
     <!-- Social Links Section -->
     <section class="py-16 bg-gray-800">
         <div class="max-w-4xl mx-auto px-6 text-center">
             <h2 class="text-3xl font-semibold mb-8">Follow & Play</h2>
             <div class="flex flex-wrap justify-center gap-6">
-
-                <a href="https://store.steampowered.com/app/3454830/SurfsUp/" target="_blank" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg text-white transition">
+                <a href="https://store.steampowered.com/app/3454830/SurfsUp/" target="_blank" class="flex items-center gap-2 bg-blue-800 hover:bg-blue-700 px-6 py-3 rounded-lg text-white transition">
                     <!-- Steam Icon (Heroicons doesn't have one; use a globe as placeholder) -->
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3C7.5 3 4 6.5 4 11c0 1.5.5 2.9 1.3 4l-1.3 4 4-1.3c1.1.8 2.5 1.3 4 1.3 4.5 0 8-3.5 8-8s-3.5-8-8-8z" />
-                    </svg>
+                    <i class="fa-brands fa-steam"></i>
                     Steam
                 </a>
 
-                <a href="https://twitter.com/surfsupgame" target="_blank" class="flex items-center gap-2 bg-blue-400 hover:bg-blue-500 px-6 py-3 rounded-lg text-white transition">
+                <a href="https://bsky.app/profile/bearlikelion.com" target="_blank" class="flex items-center gap-2 bg-blue-400 hover:bg-blue-500 px-6 py-3 rounded-lg text-white transition">
                     <!-- Heroicon: Share -->
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 8a3 3 0 11-2.83-2H12A3 3 0 0115 8zM9 16a3 3 0 11-2.83-2H6A3 3 0 019 16zm12-4a3 3 0 11-2.83-2H18a3 3 0 013 3z" />
-                    </svg>
+                    <i class="fa-brands fa-bluesky"></i>
+                    Bsky
+                </a>
+
+                <a href="https://twitter.com/bearlikelion" target="_blank" class="flex items-center gap-2 bg-black hover:bg-gray-950 px-6 py-3 rounded-lg text-white transition">
+                    <!-- Heroicon: Share -->
+                    <i class="fa-brands fa-x-twitter"></i>
                     Twitter / X
                 </a>
 
-                <a href="https://instagram.com/surfsupgame" target="_blank" class="flex items-center gap-2 bg-pink-500 hover:bg-pink-600 px-6 py-3 rounded-lg text-white transition">
-                    <!-- Heroicon: Camera -->
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 10a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 012-2h3.28a1 1 0 01.948.684l.894 2.684a1 1 0 00.948.684H17a2 2 0 012 2v7a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
-                    </svg>
-                    Instagram
+                <a href="https://tiktok.com/surfsup.game" target="_blank" class="flex items-center gap-2 bg-black hover:bg-gray-950 px-6 py-3 rounded-lg text-white transition">
+                    <!-- Heroicon: Share -->
+                    <i class="fa-brands fa-tiktok"></i>
+                    Tiktok
                 </a>
 
-                <a href="https://youtube.com/@surfsupgame" target="_blank" class="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-6 py-3 rounded-lg text-white transition">
+                <a href="https://youtube.com/@bearlikelion" target="_blank" class="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-6 py-3 rounded-lg text-white transition">
                     <!-- Heroicon: Play -->
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-5.197-3.027A1 1 0 008 9.027v5.946a1 1 0 001.555.858l5.197-3.027a1 1 0 000-1.736z" />
-                    </svg>
+                    <i class="fa-brands fa-youtube"></i>
                     YouTube
                 </a>
 

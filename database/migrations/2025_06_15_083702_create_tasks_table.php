@@ -15,7 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('description')->nullable();
-            $table->string('status')->default(TaskStatus::Todo->value); // Used as the Kanban column
+            $table->string('status')->default('todo');
+            $table->integer('order_column')->nullable();
+            $table->integer('sort_order')->nullable();
             $table->foreignId('assigned_to')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
