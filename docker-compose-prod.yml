@@ -1,25 +1,28 @@
-version: '3.8'
-
 services:
   app:
-    image: bitnami/laravel:latest # Replace with your actual image or build context if needed
-    container_name: laravel_app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: surfsup
     restart: unless-stopped
-    ports:
-      - '${APP_PORT:-8084}:80'
-    environment:
-      APP_ENV: production
-      APP_DEBUG: false
-      APP_KEY: '${APP_KEY}'
-      DB_HOST: mariadb
-      DB_PORT: 3306
-      DB_DATABASE: '${DB_DATABASE}'
-      DB_USERNAME: '${DB_USERNAME}'
-      DB_PASSWORD: '${DB_PASSWORD}'
     volumes:
       - .:/var/www/html
     depends_on:
       - mariadb
+    networks:
+      - laravel
+
+  nginx:
+    image: nginx:1.25
+    container_name: laravel_nginx
+    restart: unless-stopped
+    ports:
+      - '8000:80'
+    volumes:
+      - .:/var/www/html
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
     networks:
       - laravel
 
@@ -34,13 +37,10 @@ services:
       MYSQL_PASSWORD: '${DB_PASSWORD}'
     volumes:
       - mariadb-data:/var/lib/mysql
+    ports:
+      - '3306:3306'
     networks:
       - laravel
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      retries: 5
-      timeout: 5s
 
 networks:
   laravel:
