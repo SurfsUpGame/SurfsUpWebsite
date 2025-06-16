@@ -6,8 +6,10 @@ RUN apt-get update && apt-get install -y \
     unzip \
     git \
     curl \
-    libicu-dev \
     mariadb-client \
+    libicu-dev \
+    nodejs \
+    npm \
     && docker-php-ext-install pdo pdo_mysql zip intl
 
 # Set working directory
@@ -19,8 +21,9 @@ COPY . .
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Optional: install dependencies
-# RUN composer install
+# Optional: pre-install Laravel and Vite dependencies
+RUN composer install
+RUN npm install && npm run build
 
-# Set permissions
+# Set file ownership
 RUN chown -R www-data:www-data /var/www/html
