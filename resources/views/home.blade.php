@@ -96,7 +96,20 @@
     <section class="bg-gray-900 py-16 px-6">
         <div class="max-w-6xl mx-auto text-center mb-10">
             <h2 class="text-3xl font-bold text-white mb-4">Watch & Wishlist</h2>
-            <p class="text-gray-300">Catch the trailer, wishlist SurfsUp on Steam, and join our community on Discord!</p>
+            <p class="text-gray-300">Catch the trailer, wishlist on Steam, watch development live on Twitch, and join the community on Discord!</p>
+        </div>
+
+        <!-- Twitch Embed -->
+        <div class="w-full aspect-video max-w-3xl mx-auto rounded-lg mb-10 overflow-hidden">
+            <p class="text-gray-300 text-center mb-6">Join the stream and chat while I develop SurfsUp live!</p>
+            <iframe
+                src="https://player.twitch.tv/?channel=bearlikelion&parent={{ request()->getHost() }}"
+                frameborder="0"
+                allowfullscreen="true"
+                scrolling="no"
+                height="100%"
+                width="100%">
+            </iframe>
         </div>
 
         <div class="flex flex-col lg:flex-row justify-center gap-8 max-w-6xl mx-auto">
