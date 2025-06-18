@@ -28,10 +28,42 @@
 {{--        <a href="{{ route('login') }}" class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg transition">--}}
 {{--            Login with Steam--}}
 {{--        </a>--}}
+
+        <div class="flex flex-wrap justify-center gap-6">
+            <a href="https://store.steampowered.com/app/3454830/SurfsUp/" target="_blank" class="flex items-center gap-2 bg-blue-800 hover:bg-blue-700 px-6 py-3 rounded-lg text-white transition">
+                <!-- Steam Icon (Heroicons doesn't have one; use a globe as placeholder) -->
+                <i class="fa-brands fa-steam"></i>
+                Steam
+            </a>
+
+            <a href="https://bsky.app/profile/bearlikelion.com" target="_blank" class="flex items-center gap-2 bg-blue-400 hover:bg-blue-500 px-6 py-3 rounded-lg text-white transition">
+                <!-- Heroicon: Share -->
+                <i class="fa-brands fa-bluesky"></i>
+                Bsky
+            </a>
+
+            <a href="https://twitter.com/bearlikelion" target="_blank" class="flex items-center gap-2 bg-black hover:bg-gray-950 px-6 py-3 rounded-lg text-white transition">
+                <!-- Heroicon: Share -->
+                <i class="fa-brands fa-x-twitter"></i>
+                Twitter / X
+            </a>
+
+            <a href="https://tiktok.com/surfsup.game" target="_blank" class="flex items-center gap-2 bg-black hover:bg-gray-950 px-6 py-3 rounded-lg text-white transition">
+                <!-- Heroicon: Share -->
+                <i class="fa-brands fa-tiktok"></i>
+                Tiktok
+            </a>
+
+            <a href="https://youtube.com/@bearlikelion" target="_blank" class="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-6 py-3 rounded-lg text-white transition">
+                <!-- Heroicon: Play -->
+                <i class="fa-brands fa-youtube"></i>
+                YouTube
+            </a>
+        </div>
     </header>
 
     <!-- Parallax Hero -->
-    <section class="parallax flex items-center justify-center">
+    <section class="parallax flex pb-6 items-center justify-center">
         <div class="bg-gray-900 bg-opacity-60 p-8 rounded-xl text-center max-w-2xl">
             <h1 class="text-4xl md:text-6xl font-bold mb-4">🌊 SurfsUp</h1>
             <p class="text-lg md:text-xl mb-6">
@@ -107,49 +139,8 @@
         </div>
     </section>
 
-
-
-    <!-- Social Links Section -->
-    <section class="py-16 bg-gray-800">
-        <div class="max-w-4xl mx-auto px-6 text-center">
-            <h2 class="text-3xl font-semibold mb-8">Follow & Play</h2>
-            <div class="flex flex-wrap justify-center gap-6">
-                <a href="https://store.steampowered.com/app/3454830/SurfsUp/" target="_blank" class="flex items-center gap-2 bg-blue-800 hover:bg-blue-700 px-6 py-3 rounded-lg text-white transition">
-                    <!-- Steam Icon (Heroicons doesn't have one; use a globe as placeholder) -->
-                    <i class="fa-brands fa-steam"></i>
-                    Steam
-                </a>
-
-                <a href="https://bsky.app/profile/bearlikelion.com" target="_blank" class="flex items-center gap-2 bg-blue-400 hover:bg-blue-500 px-6 py-3 rounded-lg text-white transition">
-                    <!-- Heroicon: Share -->
-                    <i class="fa-brands fa-bluesky"></i>
-                    Bsky
-                </a>
-
-                <a href="https://twitter.com/bearlikelion" target="_blank" class="flex items-center gap-2 bg-black hover:bg-gray-950 px-6 py-3 rounded-lg text-white transition">
-                    <!-- Heroicon: Share -->
-                    <i class="fa-brands fa-x-twitter"></i>
-                    Twitter / X
-                </a>
-
-                <a href="https://tiktok.com/surfsup.game" target="_blank" class="flex items-center gap-2 bg-black hover:bg-gray-950 px-6 py-3 rounded-lg text-white transition">
-                    <!-- Heroicon: Share -->
-                    <i class="fa-brands fa-tiktok"></i>
-                    Tiktok
-                </a>
-
-                <a href="https://youtube.com/@bearlikelion" target="_blank" class="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-6 py-3 rounded-lg text-white transition">
-                    <!-- Heroicon: Play -->
-                    <i class="fa-brands fa-youtube"></i>
-                    YouTube
-                </a>
-
-            </div>
-        </div>
-    </section>
-
     <!-- SurvivalScape Promo Section -->
-    <section class="py-16 bg-gray-900 px-6">
+    <section class="py-16 bg-gray-800">
         <div class="max-w-4xl mx-auto text-center">
             <h2 class="text-3xl font-bold text-white mb-4">Checkout Mark's First Game</h2>
             <p class="text-gray-300 mb-6">A competitive 2D roguelike auto shooter <strong>SurvivalScape</strong> is available on Steam.</p>
@@ -167,12 +158,10 @@
         </div>
     </section>
 
-
     <!-- Footer -->
     <footer class="bg-gray-900 py-6 text-center text-sm text-gray-400">
         &copy; {{ date('Y') }} Mark Arneman. All rights reserved.
     </footer>
-
 
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-H68DQ85G4C"></script>
     <script>
