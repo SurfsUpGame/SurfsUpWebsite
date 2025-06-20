@@ -22,45 +22,39 @@
 <body class="text-white bg-gray-900">
 
     <!-- Header -->
-    <header class="fixed top-0 left-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-gray-800 bg-opacity-0 backdrop-blur-md text-white shadow-md">
-        <h1 class="text-2xl font-bold"><a href="/">🌊 SurfsUp</a></h1>
+    <header x-data="{ open: false }" class="fixed top-0 left-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-gray-800 bg-opacity-0 backdrop-blur-md text-white shadow-md">
+        <h1 class="text-2xl font-bold">
+            <a href="/">🌊 SurfsUp</a>
+        </h1>
 
-{{--        <a href="{{ route('login') }}" class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg transition">--}}
-{{--            Login with Steam--}}
-{{--        </a>--}}
+        <!-- Hamburger Icon (Mobile Only) -->
+        <button @click="open = !open" class="md:hidden text-white focus:outline-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path x-show="!open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                <path x-show="open" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
 
-        <div class="flex flex-wrap justify-center gap-6">
-            <a href="https://store.steampowered.com/app/3454830/SurfsUp/" target="_blank" class="flex items-center gap-2 bg-blue-800 hover:bg-blue-700 px-6 py-3 rounded-lg text-white transition">
-                <!-- Steam Icon (Heroicons doesn't have one; use a globe as placeholder) -->
-                <i class="fa-brands fa-steam"></i>
-                Steam
+        <!-- Social Links -->
+        <div :class="{'block': open, 'hidden': !open}" class="absolute top-full left-0 w-full bg-gray-800 shadow-md md:shadow-none md:bg-transparent md:static md:flex md:flex-wrap md:justify-end gap-4 md:gap-6 px-6 py-4 md:py-0 hidden transition-all duration-300 ease-in-out">
+            <a href="https://store.steampowered.com/app/3454830/SurfsUp/" target="_blank" class="flex items-center gap-2 hover:underline transition">
+                <i class="fa-brands fa-steam"></i> Steam
             </a>
-
-            <a href="https://bsky.app/profile/bearlikelion.com" target="_blank" class="flex items-center gap-2 bg-blue-400 hover:bg-blue-500 px-6 py-3 rounded-lg text-white transition">
-                <!-- Heroicon: Share -->
-                <i class="fa-brands fa-bluesky"></i>
-                Bsky
+            <a href="https://bsky.app/profile/bearlikelion.com" target="_blank" class="flex items-center gap-2 hover:underline transition">
+                <i class="fa-brands fa-bluesky"></i> Bsky
             </a>
-
-            <a href="https://twitter.com/bearlikelion" target="_blank" class="flex items-center gap-2 bg-black hover:bg-gray-950 px-6 py-3 rounded-lg text-white transition">
-                <!-- Heroicon: Share -->
-                <i class="fa-brands fa-x-twitter"></i>
-                Twitter / X
+            <a href="https://twitter.com/bearlikelion" target="_blank" class="flex items-center gap-2 hover:underline transition">
+                <i class="fa-brands fa-x-twitter"></i> Twitter / X
             </a>
-
-            <a href="https://tiktok.com/surfsup.game" target="_blank" class="flex items-center gap-2 bg-black hover:bg-gray-950 px-6 py-3 rounded-lg text-white transition">
-                <!-- Heroicon: Share -->
-                <i class="fa-brands fa-tiktok"></i>
-                Tiktok
+            <a href="https://tiktok.com/surfsup.game" target="_blank" class="flex items-center gap-2 hover:underline transition">
+                <i class="fa-brands fa-tiktok"></i> Tiktok
             </a>
-
-            <a href="https://youtube.com/@bearlikelion" target="_blank" class="flex items-center gap-2 bg-red-600 hover:bg-red-700 px-6 py-3 rounded-lg text-white transition">
-                <!-- Heroicon: Play -->
-                <i class="fa-brands fa-youtube"></i>
-                YouTube
+            <a href="https://youtube.com/@bearlikelion" target="_blank" class="flex items-center gap-2 hover:underline transition">
+                <i class="fa-brands fa-youtube"></i> YouTube
             </a>
         </div>
     </header>
+
 
     <!-- Parallax Hero -->
     <section class="parallax flex pb-6 items-center justify-center">
@@ -176,6 +170,8 @@
         &copy; {{ date('Y') }} Mark Arneman. All rights reserved.
     </footer>
 
+
+    <script src="//unpkg.com/alpinejs" defer></script>
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-H68DQ85G4C"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
