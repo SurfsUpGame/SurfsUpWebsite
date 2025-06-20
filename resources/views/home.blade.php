@@ -24,7 +24,9 @@
     <!-- Header -->
     <header x-data="{ open: false }" class="fixed top-0 left-0 w-full z-50 px-6 py-4 flex justify-between items-center bg-gray-800 bg-opacity-0 backdrop-blur-md text-white shadow-md">
         <h1 class="text-2xl font-bold">
-            <a href="/">🌊 SurfsUp</a>
+            <a href="/" class="inline-flex items-center gap-2">
+                🌊 <span>SurfsUp</span>
+            </a>
         </h1>
 
         <!-- Hamburger Icon (Mobile Only) -->
