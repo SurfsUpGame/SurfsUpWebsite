@@ -15,7 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
             '192.168.1.1',
             '10.0.0.0/8',
             '172.16.0.0/16',
-            '147.93.2.76/21',
+            '172.19.0.0/16',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
