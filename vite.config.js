@@ -13,7 +13,6 @@ export default defineConfig({
         tailwindcss(),
     ],
     server: {
-        https: true,
         cors: true,
     },
 });
