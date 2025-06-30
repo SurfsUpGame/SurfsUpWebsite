@@ -42,7 +42,7 @@
             <a href="https://store.steampowered.com/app/3454830/SurfsUp/" target="_blank" class="flex items-center gap-2 hover:underline transition">
                 <i class="fa-brands fa-steam"></i> Steam
             </a>
-            <a href="https://discord.com/invite/jpfS6fSv" target="_blank" class="flex items-center gap-2 hover:underline transition">
+            <a href="https://discord.com/invite/95XmYfPnwV" target="_blank" class="flex items-center gap-2 hover:underline transition">
                 <i class="fa-brands fa-discord"></i> Discord
             </a>
             <a href="https://bsky.app/profile/bearlikelion.com" target="_blank" class="flex items-center gap-2 hover:underline transition">
