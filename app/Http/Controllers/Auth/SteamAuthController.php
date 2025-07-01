@@ -35,11 +35,11 @@ final class SteamAuthController
 
     public function callback(Request $request): RedirectResponse
     {
-        Log::info('Steam callback received', $request->all());
+        // Log::info('Steam callback received', $request->all());
 
         $steamId = $this->steam->validate($request->all());
 
-        Log::info('Steam ID from validation', ['steam_id' => $steamId]);
+        // Log::info('Steam ID from validation', ['steam_id' => $steamId]);
 
         if (!$steamId) {
             return $this->redirector->route('filament.admin.auth.login')
@@ -48,7 +48,7 @@ final class SteamAuthController
 
         $steamUser = $this->steam->getUserInfo($steamId);
 
-        Log::info('Steam user info', ['steam_user' => $steamUser]);
+        // Log::info('Steam user info', ['steam_user' => $steamUser]);
 
         if (!$steamUser) {
             return $this->redirector->route('filament.admin.auth.login')
@@ -57,7 +57,7 @@ final class SteamAuthController
 
         $user = $this->firstOrCreate($steamId, $steamUser);
 
-        Log::info('User created/found', ['user' => $user->toArray()]);
+        // Log::info('User created/found', ['user' => $user->toArray()]);
 
         $this->authManager->login($user, true);
 

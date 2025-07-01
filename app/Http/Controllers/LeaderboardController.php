@@ -42,6 +42,13 @@ class LeaderboardController extends Controller
             return isset($ranking['rank_data']);
         });
 
+        // Sort by rank (lowest rank number first)
+        usort($rankings, function($a, $b) {
+            $aRank = isset($a['rank_data']) ? $a['rank_data']['rank'] : PHP_INT_MAX;
+            $bRank = isset($b['rank_data']) ? $b['rank_data']['rank'] : PHP_INT_MAX;
+            return $aRank <=> $bRank;
+        });
+
         return view('leaderboard.show', [
             'user' => $user,
             'rankings' => $rankings,

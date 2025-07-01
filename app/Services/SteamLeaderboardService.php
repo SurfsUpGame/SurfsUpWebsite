@@ -41,10 +41,10 @@ class SteamLeaderboardService
                     'appid' => $this->appId,
                 ]);
 
-                Log::info('Steam leaderboards API response', [
-                    'status' => $response->status(),
-                    'body' => $response->body()
-                ]);
+//                Log::info('Steam leaderboards API response', [
+//                    'status' => $response->status(),
+//                    'body' => $response->body()
+//                ]);
 
                 if ($response->successful()) {
                     $data = $response->json();
@@ -62,7 +62,7 @@ class SteamLeaderboardService
                             ];
                         }
 
-                        Log::info('Successfully fetched Steam leaderboards', ['count' => count($leaderboards)]);
+                        // Log::info('Successfully fetched Steam leaderboards', ['count' => count($leaderboards)]);
                         return $leaderboards;
                     }
                 }
@@ -91,7 +91,7 @@ class SteamLeaderboardService
     {
         $cacheKey = "steam_leaderboard_rank_{$steamId}_{$leaderboardId}";
 
-        return Cache::remember($cacheKey, 300, function () use ($steamId, $leaderboardId) {
+        return Cache::remember($cacheKey, 900, function () use ($steamId, $leaderboardId) {
             if (!$this->publisherApiKey) {
                 Log::warning('No Steam Publisher API key configured for user rank');
                 return null;
@@ -108,12 +108,12 @@ class SteamLeaderboardService
                     'datarequest' => 'RequestAroundUser',
                 ]);
 
-                Log::info('Steam user rank API response', [
-                    'leaderboard_id' => $leaderboardId,
-                    'steam_id' => $steamId,
-                    'status' => $response->status(),
-                    'body' => $response->body()
-                ]);
+//                Log::info('Steam user rank API response', [
+//                    'leaderboard_id' => $leaderboardId,
+//                    'steam_id' => $steamId,
+//                    'status' => $response->status(),
+//                    'body' => $response->body()
+//                ]);
 
                 if ($response->successful()) {
                     $data = $response->json();
@@ -178,11 +178,11 @@ class SteamLeaderboardService
                     'datarequest' => 'RequestGlobal',
                 ]);
 
-                Log::info('Steam leaderboard entries API response', [
-                    'leaderboard_id' => $leaderboardId,
-                    'status' => $response->status(),
-                    'body' => $response->body()
-                ]);
+//                Log::info('Steam leaderboard entries API response', [
+//                    'leaderboard_id' => $leaderboardId,
+//                    'status' => $response->status(),
+//                    'body' => $response->body()
+//                ]);
 
                 if ($response->successful()) {
                     $data = $response->json();
@@ -233,7 +233,7 @@ class SteamLeaderboardService
     {
         $cacheKey = "steam_leaderboard_around_{$leaderboardId}_{$steamId}_{$limit}";
 
-        return Cache::remember($cacheKey, 300, function () use ($leaderboardId, $steamId, $limit) {
+        return Cache::remember($cacheKey, 900, function () use ($leaderboardId, $steamId, $limit) {
             if (!$this->publisherApiKey) {
                 Log::warning('No Steam Publisher API key configured for leaderboard entries around user');
                 return [];
@@ -431,7 +431,7 @@ class SteamLeaderboardService
                 }
 
                 // Cache the result (even if null)
-                Cache::put($cacheKey, $rankData, 300);
+                Cache::put($cacheKey, $rankData, 900);
 
                 // Add rank data to leaderboard if available
                 if ($rankData) {

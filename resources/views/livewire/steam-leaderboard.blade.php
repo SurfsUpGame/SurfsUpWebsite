@@ -32,59 +32,26 @@
                     <table class="w-full text-left bg-gray-700 rounded-lg">
                         <thead>
                             <tr class="text-gray-300 bg-gray-600">
-                                <th class="p-3 text-left">
-                                    <button wire:click="sortBy('name')" class="flex items-center gap-1 hover:text-white transition">
-                                        Leaderboard
-                                        @if($sortBy === 'name')
-                                            <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} text-xs"></i>
-                                        @else
-                                            <i class="fas fa-sort text-xs opacity-50"></i>
-                                        @endif
-                                    </button>
-                                </th>
-                                <th class="p-3 text-center">
-                                    <button wire:click="sortBy('rank')" class="flex items-center gap-1 hover:text-white transition mx-auto">
-                                        Your Rank
-                                        @if($sortBy === 'rank')
-                                            <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} text-xs"></i>
-                                        @else
-                                            <i class="fas fa-sort text-xs opacity-50"></i>
-                                        @endif
-                                    </button>
-                                </th>
-                                <th class="p-3 text-center">
-                                    <button wire:click="sortBy('percentile')" class="flex items-center gap-1 hover:text-white transition mx-auto">
-                                        Rank Group
-                                        @if($sortBy === 'percentile')
-                                            <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} text-xs"></i>
-                                        @else
-                                            <i class="fas fa-sort text-xs opacity-50"></i>
-                                        @endif
-                                    </button>
-                                </th>
-                                <th class="p-3 text-center">
-                                    <button wire:click="sortBy('score')" class="flex items-center gap-1 hover:text-white transition mx-auto">
-                                        Your Score
-                                        @if($sortBy === 'score')
-                                            <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} text-xs"></i>
-                                        @else
-                                            <i class="fas fa-sort text-xs opacity-50"></i>
-                                        @endif
-                                    </button>
-                                </th>
+                                <th class="p-3 text-left">Leaderboard</th>
+                                <th class="p-3 text-center">Your Rank</th>
+                                <th class="p-3 text-center">Rank Group</th>
+                                <th class="p-3 text-center">Your Score</th>
                                 <th class="p-3 text-center">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($this->getFilteredRankings() as $ranking)
-                                <tr class="border-b border-gray-600 hover:bg-gray-600 transition relative overflow-hidden" 
+                                <tr class="border-b border-gray-600 hover:bg-gray-600 transition relative"
                                     style="background-image: linear-gradient(rgba(55, 65, 81, 0.85), rgba(55, 65, 81, 0.95)), url('{{ $this->getLevelImage($ranking['name']) }}'); background-size: cover; background-position: center;">
                                     <td class="p-3 relative z-10">
                                         <div class="flex items-center gap-3">
-                                            <img src="{{ $this->getLevelImage($ranking['name']) }}" 
-                                                 alt="{{ $ranking['display_name'] }}" 
-                                                 class="w-12 h-12 rounded-lg object-cover border border-gray-400 drop-shadow-lg"
-                                                 onerror="this.src='/img/levels/default.png'">
+                                            <div>
+                                                <img src="{{ $this->getLevelImage($ranking['name']) }}"
+                                                     alt="{{ $ranking['display_name'] }}"
+                                                     class="w-12 h-12 rounded-lg object-cover border border-gray-400 drop-shadow-lg cursor-pointer transition-transform hover:scale-105"
+                                                     wire:click="showImageModal({{ json_encode($ranking['name']) }}, {{ json_encode($ranking['display_name']) }})"
+                                                     onerror="this.src='/img/levels/default.png'">
+                                            </div>
                                             <h4 class="text-white font-semibold drop-shadow-lg">{{ $ranking['display_name'] }}</h4>
                                         </div>
                                     </td>
@@ -102,6 +69,16 @@
                                         </td>
                                         <td class="p-3 text-center text-white relative z-10">
                                             <span class="drop-shadow-lg">{{ number_format($ranking['rank_data']['score'] / 1000, 3) }}</span>
+                                        </td>
+                                    @elseif(isset($userScoresLoading[$ranking['id']]) && $userScoresLoading[$ranking['id']])
+                                        <td class="p-3 text-center relative z-10">
+                                            <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500 mx-auto"></div>
+                                        </td>
+                                        <td class="p-3 text-center relative z-10">
+                                            <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500 mx-auto"></div>
+                                        </td>
+                                        <td class="p-3 text-center relative z-10">
+                                            <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500 mx-auto"></div>
                                         </td>
                                     @else
                                         <td class="p-3 text-center text-gray-400 relative z-10">-</td>
@@ -140,8 +117,8 @@
 
     <!-- Leaderboard Modal -->
     @if($showModal)
-        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-gray-800 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-96 overflow-y-auto">
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" wire:click="closeModal">
+            <div class="bg-gray-800 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-96 overflow-y-auto" wire:click.stop>
                 <div class="flex justify-between items-center mb-4">
                     <h4 class="text-xl font-semibold text-white">
                         {{ $selectedLeaderboardName }} -
@@ -166,7 +143,16 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @if($modalType === 'top10' && count($topEntries) > 0)
+                            @if($modalLoading)
+                                <tr>
+                                    <td colspan="4" class="py-8 text-center">
+                                        <div class="flex justify-center items-center">
+                                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+                                            <span class="ml-3 text-gray-400">Loading...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @elseif($modalType === 'top10' && count($topEntries) > 0)
                                 @foreach($topEntries as $entry)
                                     <tr class="border-b border-gray-700 hover:bg-gray-700 transition">
                                         <td class="py-3 pr-4">
@@ -207,7 +193,15 @@
                                 @endforeach
                             @else
                                 <tr>
-                                    <td colspan="4" class="py-8 text-center text-gray-400">No data available</td>
+                                    <td colspan="4" class="py-8 text-center text-gray-400">
+                                        @if($modalType === 'top10')
+                                            No top 10 data available
+                                        @elseif($modalType === 'aroundme')
+                                            No data available around your rank
+                                        @else
+                                            No data available
+                                        @endif
+                                    </td>
                                 </tr>
                             @endif
                         </tbody>
@@ -218,7 +212,7 @@
     @endif
 
     <!-- Share URL Modal -->
-    @if($showShareUrl)
+    @if($shareModalVisible)
         <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div class="bg-gray-800 rounded-lg p-6 max-w-lg w-full mx-4">
                 <div class="flex justify-between items-center mb-4">
@@ -235,42 +229,55 @@
                     <p class="text-gray-300 text-sm">
                         Share this URL with others to show off your leaderboard rankings:
                     </p>
-                    
+
                     <div class="flex items-center gap-2">
-                        <input type="text" 
-                               value="{{ $shareUrl }}" 
-                               readonly 
+                        <input type="text"
+                               value="{{ $shareUrl }}"
+                               readonly
                                class="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                                id="shareUrlInput">
-                        <button onclick="copyToClipboard()" 
+                        <button onclick="copyToClipboard()"
                                 class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm transition flex items-center gap-2">
                             <i class="fas fa-copy"></i>
                             Copy
                         </button>
                     </div>
-                    
+
                     <div class="flex gap-2">
-                        <a href="https://twitter.com/intent/tweet?text=Check%20out%20my%20SurfsUp%20leaderboard%20rankings!&url={{ urlencode($shareUrl) }}" 
-                           target="_blank" 
+                        <a href="https://twitter.com/intent/tweet?text=Check%20out%20my%20SurfsUp%20leaderboard%20rankings!&url={{ urlencode($shareUrl) }}"
+                           target="_blank"
                            class="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded text-sm transition">
                             <i class="fab fa-twitter"></i>
                             Twitter
                         </a>
-                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode($shareUrl) }}" 
-                           target="_blank" 
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode($shareUrl) }}"
+                           target="_blank"
                            class="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white px-3 py-2 rounded text-sm transition">
                             <i class="fab fa-facebook"></i>
                             Facebook
                         </a>
-                        <a href="https://discord.com/channels/@me" 
-                           target="_blank" 
-                           class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded text-sm transition"
-                           onclick="copyToClipboard(); this.innerHTML='<i class=&quot;fab fa-discord&quot;></i> Copied!'">
-                            <i class="fab fa-discord"></i>
-                            Discord
-                        </a>
                     </div>
                 </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Full Screen Image Modal -->
+    @if($imageModalVisible)
+        <div class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[99999]" wire:click="closeImageModal">
+            <div class="max-w-full max-h-full p-4 flex flex-col items-center">
+                <div class="relative">
+                    <img src="{{ $selectedImageUrl }}"
+                         alt="{{ $selectedImageName }}"
+                         class="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
+                         onerror="this.src='/img/levels/default.png'"
+                         wire:click.stop>
+                    <button wire:click="closeImageModal"
+                            class="absolute top-4 right-4 text-white bg-black bg-opacity-50 hover:bg-opacity-75 rounded-full w-10 h-10 flex items-center justify-center text-xl transition">
+                        ×
+                    </button>
+                </div>
+                <h3 class="text-white text-2xl font-bold mt-6 text-center drop-shadow-lg">{{ $selectedImageName }}</h3>
             </div>
         </div>
     @endif
@@ -279,20 +286,89 @@
 <script>
 function copyToClipboard() {
     const input = document.getElementById('shareUrlInput');
+    const button = document.querySelector('button[onclick="copyToClipboard()"]');
+    const originalText = button.innerHTML;
+
     input.select();
     input.setSelectionRange(0, 99999);
-    navigator.clipboard.writeText(input.value).then(function() {
-        // Optional: Show a toast notification
-        const button = document.querySelector('button[onclick="copyToClipboard()"]');
-        const originalText = button.innerHTML;
-        button.innerHTML = '<i class="fas fa-check"></i> Copied!';
-        button.classList.add('bg-green-600');
-        button.classList.remove('bg-purple-600');
-        setTimeout(() => {
-            button.innerHTML = originalText;
-            button.classList.remove('bg-green-600');
-            button.classList.add('bg-purple-600');
-        }, 2000);
-    });
+
+    // Try modern clipboard API first (HTTPS/localhost only)
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(input.value).then(function() {
+            showCopySuccess(button, originalText);
+        }).catch(function() {
+            // Fallback to execCommand
+            const success = fallbackCopyToClipboard(input);
+            if (success) showCopySuccess(button, originalText);
+        });
+    } else {
+        // Fallback for non-secure contexts
+        const success = fallbackCopyToClipboard(input);
+        if (success) showCopySuccess(button, originalText);
+    }
 }
+
+function fallbackCopyToClipboard(input) {
+    try {
+        input.focus();
+        input.select();
+        return document.execCommand('copy');
+    } catch (err) {
+        console.error('Fallback copy failed:', err);
+        return false;
+    }
+}
+
+function showCopySuccess(button, originalText) {
+    button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+    button.classList.add('bg-green-600');
+    button.classList.remove('bg-purple-600');
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.classList.remove('bg-green-600');
+        button.classList.add('bg-purple-600');
+    }, 2000);
+}
+
+// Listen for the custom event to start async score loading
+document.addEventListener('livewire:init', () => {
+    Livewire.on('startAsyncScoreLoading', () => {
+        try {
+            const rankings = @json($rankings ?? []);
+
+            if (Array.isArray(rankings)) {
+                rankings.forEach((ranking, index) => {
+                    // Only load if not cached and not already loaded
+                    const userScoresLoading = @json($userScoresLoading ?? []);
+                    if (ranking && ranking.id && !ranking.rank_data && userScoresLoading[ranking.id]) {
+                        // Add slight delay to stagger requests
+                        setTimeout(() => {
+                            Livewire.dispatch('loadSingleUserScore', {
+                                leaderboardId: ranking.id,
+                                index: index
+                            });
+                        }, index * 100);
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error in async score loading:', error);
+        }
+    });
+
+    // Listen for modal data loading events
+    Livewire.on('loadTop10DataAsync', (leaderboardName) => {
+        console.log("Show top 10");
+        setTimeout(() => {
+            Livewire.dispatch('loadTop10DataAsync', { leaderboardName });
+        }, 100);
+    });
+
+    Livewire.on('loadAroundMeDataAsync', (leaderboardName) => {
+        console.log("Show Around Me");
+        setTimeout(() => {
+            Livewire.dispatch('loadAroundMeDataAsync', { leaderboardName });
+        }, 100);
+    });
+});
 </script>

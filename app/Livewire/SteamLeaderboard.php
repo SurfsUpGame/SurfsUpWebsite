@@ -4,23 +4,28 @@ namespace App\Livewire;
 
 use App\Services\SteamLeaderboardService;
 use Livewire\Component;
+use Livewire\Attributes\On;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class SteamLeaderboard extends Component
 {
     public $rankings = [];
     public $loading = true;
+    public $userScoresLoading = [];
     public $selectedLeaderboard = null;
     public $selectedLeaderboardName = null;
     public $topEntries = [];
     public $aroundMeEntries = [];
+    public $modalLoading = false;
     public $showModal = false;
     public $modalType = null;
     public $showOnlyWithScores = true;
-    public $sortBy = 'rank';
-    public $sortDirection = 'asc';
-    public $showShareUrl = false;
+    public $shareModalVisible = false;
     public $shareUrl = '';
+    public $imageModalVisible = false;
+    public $selectedImageUrl = '';
+    public $selectedImageName = '';
 
     protected $leaderboardService;
 
@@ -32,6 +37,7 @@ class SteamLeaderboard extends Component
     public function loadUserRankings(): void
     {
         $this->loading = true;
+        $this->userScoresLoading = [];
 
         if (Auth::check() && Auth::user()->steam_id) {
             $service = new SteamLeaderboardService();
@@ -40,29 +46,63 @@ class SteamLeaderboard extends Component
             $leaderboards = $service->getLeaderboards();
             $this->rankings = [];
 
-            // For each leaderboard, get the user's rank
+            // Load cached scores first, then mark remaining for async loading
             foreach ($leaderboards as $leaderboard) {
                 if (isset($leaderboard['id'])) {
-                    $rankData = $service->getUserRank(Auth::user()->steam_id, $leaderboard['id']);
-
-                    if ($rankData) {
-                        $leaderboard['rank_data'] = $rankData;
+                    // Check cache first
+                    $cacheKey = "steam_leaderboard_rank_" . Auth::user()->steam_id . "_" . $leaderboard['id'];
+                    $cachedRank = Cache::get($cacheKey);
+                    
+                    if ($cachedRank) {
+                        // Use cached data immediately
+                        $leaderboard['rank_data'] = $cachedRank;
+                        $this->userScoresLoading[$leaderboard['id']] = false;
+                    } else {
+                        // Mark for async loading
+                        $this->userScoresLoading[$leaderboard['id']] = true;
                     }
-
+                    
                     $this->rankings[] = $leaderboard;
                 }
             }
         }
 
         $this->loading = false;
+
+        // Now asynchronously load remaining user scores that weren't cached
+        $this->loadUserScores();
     }
 
-    public function viewTop10($leaderboardName)
+    public function loadUserScores(): void
     {
-        $this->selectedLeaderboard = $leaderboardName;
-        $this->selectedLeaderboardName = $this->getLeaderboardDisplayName($leaderboardName);
-        $this->modalType = 'top10';
+        if (!Auth::check() || !Auth::user()->steam_id) {
+            return;
+        }
 
+        // Use JavaScript to trigger individual score loading
+        $this->dispatch('startAsyncScoreLoading');
+    }
+
+    #[On('loadSingleUserScore')]
+    public function loadSingleUserScore($leaderboardId, $index): void
+    {
+        if (!Auth::check() || !Auth::user()->steam_id) {
+            return;
+        }
+
+        $service = new SteamLeaderboardService();
+        $rankData = $service->getUserRank(Auth::user()->steam_id, $leaderboardId);
+
+        if ($rankData) {
+            $this->rankings[$index]['rank_data'] = $rankData;
+        }
+
+        $this->userScoresLoading[$leaderboardId] = false;
+    }
+
+    #[On('loadTop10DataAsync')]
+    public function loadTop10DataAsync($leaderboardName): void
+    {
         $service = new SteamLeaderboardService();
         $leaderboardId = $this->getLeaderboardId($leaderboardName);
 
@@ -72,15 +112,12 @@ class SteamLeaderboard extends Component
             $this->topEntries = [];
         }
 
-        $this->showModal = true;
+        $this->modalLoading = false;
     }
 
-    public function viewAroundMe($leaderboardName)
+    #[On('loadAroundMeDataAsync')]
+    public function loadAroundMeDataAsync($leaderboardName): void
     {
-        $this->selectedLeaderboard = $leaderboardName;
-        $this->selectedLeaderboardName = $this->getLeaderboardDisplayName($leaderboardName);
-        $this->modalType = 'aroundme';
-
         $service = new SteamLeaderboardService();
         $leaderboardId = $this->getLeaderboardId($leaderboardName);
 
@@ -90,7 +127,37 @@ class SteamLeaderboard extends Component
             $this->aroundMeEntries = [];
         }
 
+        $this->modalLoading = false;
+    }
+
+    public function viewTop10($leaderboardName)
+    {
+        $this->selectedLeaderboard = $leaderboardName;
+        $this->selectedLeaderboardName = $this->getLeaderboardDisplayName($leaderboardName);
+        $this->modalType = 'top10';
+        $this->modalLoading = true;
+        $this->topEntries = [];
+        
+        // Open modal immediately
         $this->showModal = true;
+        
+        // Load data synchronously for now
+        $this->loadTop10DataAsync($leaderboardName);
+    }
+
+    public function viewAroundMe($leaderboardName)
+    {
+        $this->selectedLeaderboard = $leaderboardName;
+        $this->selectedLeaderboardName = $this->getLeaderboardDisplayName($leaderboardName);
+        $this->modalType = 'aroundme';
+        $this->modalLoading = true;
+        $this->aroundMeEntries = [];
+        
+        // Open modal immediately
+        $this->showModal = true;
+        
+        // Load data synchronously for now
+        $this->loadAroundMeDataAsync($leaderboardName);
     }
 
     public function closeModal()
@@ -101,6 +168,7 @@ class SteamLeaderboard extends Component
         $this->selectedLeaderboardName = null;
         $this->topEntries = [];
         $this->aroundMeEntries = [];
+        $this->modalLoading = false;
     }
 
     private function getLeaderboardId($leaderboardName)
@@ -127,12 +195,12 @@ class SteamLeaderboard extends Component
     {
         $imageName = strtolower($levelName) . '.png';
         $imagePath = '/img/levels/' . $imageName;
-        
+
         // Check if file exists in public directory
         if (file_exists(public_path($imagePath))) {
             return $imagePath;
         }
-        
+
         // Fallback to a default image or return null
         return '/img/levels/default.png';
     }
@@ -177,29 +245,34 @@ class SteamLeaderboard extends Component
         }
     }
 
-    public function sortBy($field)
-    {
-        if ($this->sortBy === $field) {
-            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
-        } else {
-            $this->sortBy = $field;
-            $this->sortDirection = 'asc';
-        }
-    }
 
     public function showShareUrl()
     {
         if (Auth::check() && Auth::user()->steam_id) {
             $steamId = Auth::user()->steam_id;
             $this->shareUrl = url('/leaderboard/' . $steamId);
-            $this->showShareUrl = true;
+            $this->shareModalVisible = true;
         }
     }
 
     public function closeShareUrl()
     {
-        $this->showShareUrl = false;
+        $this->shareModalVisible = false;
         $this->shareUrl = '';
+    }
+
+    public function showImageModal($levelName, $displayName)
+    {
+        $this->selectedImageUrl = $this->getLevelImage($levelName);
+        $this->selectedImageName = $displayName;
+        $this->imageModalVisible = true;
+    }
+
+    public function closeImageModal()
+    {
+        $this->imageModalVisible = false;
+        $this->selectedImageUrl = '';
+        $this->selectedImageName = '';
     }
 
     public function getFilteredRankings()
@@ -212,36 +285,11 @@ class SteamLeaderboard extends Component
             });
         }
 
-        // Sort rankings
+        // Sort by rank (lowest rank number first)
         usort($rankings, function($a, $b) {
-            $aValue = null;
-            $bValue = null;
-
-            // Get values based on sort field
-            switch ($this->sortBy) {
-                case 'rank':
-                    $aValue = isset($a['rank_data']) ? $a['rank_data']['rank'] : PHP_INT_MAX;
-                    $bValue = isset($b['rank_data']) ? $b['rank_data']['rank'] : PHP_INT_MAX;
-                    break;
-                case 'score':
-                    $aValue = isset($a['rank_data']) ? $a['rank_data']['score'] : -1;
-                    $bValue = isset($b['rank_data']) ? $b['rank_data']['score'] : -1;
-                    break;
-                case 'percentile':
-                    $aValue = isset($a['rank_data']) ? $a['rank_data']['percentile'] : -1;
-                    $bValue = isset($b['rank_data']) ? $b['rank_data']['percentile'] : -1;
-                    break;
-                default:
-                    $aValue = $a['display_name'] ?? $a['name'] ?? '';
-                    $bValue = $b['display_name'] ?? $b['name'] ?? '';
-                    return strcasecmp($aValue, $bValue);
-            }
-
-            if ($this->sortDirection === 'asc') {
-                return $aValue <=> $bValue;
-            } else {
-                return $bValue <=> $aValue;
-            }
+            $aRank = isset($a['rank_data']) ? $a['rank_data']['rank'] : PHP_INT_MAX;
+            $bRank = isset($b['rank_data']) ? $b['rank_data']['rank'] : PHP_INT_MAX;
+            return $aRank <=> $bRank;
         });
 
         return $rankings;
