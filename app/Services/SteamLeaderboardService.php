@@ -122,12 +122,12 @@ class SteamLeaderboardService
                     'datarequest' => 'RequestAroundUser',
                 ]);
 
-//                Log::info('Steam user rank API response', [
-//                    'leaderboard_id' => $leaderboardId,
-//                    'steam_id' => $steamId,
-//                    'status' => $response->status(),
-//                    'body' => $response->body()
-//                ]);
+                Log::info('Steam user rank API response', [
+                    'leaderboard_id' => $leaderboardId,
+                    'steam_id' => $steamId,
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
 
                 if ($response->successful()) {
                     $data = $response->json();
@@ -161,7 +161,7 @@ class SteamLeaderboardService
             }
 
             // No fallback - return null if real data unavailable
-            return null;
+            return [];
         });
     }
 

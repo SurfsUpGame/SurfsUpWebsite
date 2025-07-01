@@ -40,31 +40,54 @@ class SteamLeaderboard extends Component
         $this->userScoresLoading = [];
 
         if (Auth::check() && Auth::user()->steam_id) {
+            $steamId = Auth::user()->steam_id;
             $service = new SteamLeaderboardService();
 
-            // Get all leaderboards first
+            // Check for cached complete rankings first
+            $completeRankingsCacheKey = "steam_user_complete_rankings_{$steamId}";
+            $cachedCompleteRankings = Cache::pull($completeRankingsCacheKey);
+
+            if ($cachedCompleteRankings) {
+                // Use complete cached rankings
+                $this->rankings = $cachedCompleteRankings;
+                $this->userScoresLoading = array_fill_keys(array_column($this->rankings, 'id'), false);
+                $this->loading = false;
+                return;
+            }
+
+            // Get all leaderboards
             $leaderboards = $service->getLeaderboards();
             $this->rankings = [];
 
-            // If no leaderboards found, return early
             if (empty($leaderboards)) {
                 $this->loading = false;
                 return;
             }
 
-            // Collect all leaderboard IDs that need loading
+            // Batch check cache for all leaderboard ranks
+            $cacheKeys = [];
+            $leaderboardMap = [];
+
+            foreach ($leaderboards as $index => $leaderboard) {
+                if (isset($leaderboard['id'])) {
+                    $cacheKey = "steam_leaderboard_rank_{$steamId}_{$leaderboard['id']}";
+                    $cacheKeys[] = $cacheKey;
+                    $leaderboardMap[$cacheKey] = ['leaderboard' => $leaderboard, 'index' => $index];
+                }
+            }
+
+            // Batch get from cache
+            $cachedRanks = Cache::many($cacheKeys);
             $idsToLoad = [];
 
-            // Load cached scores first, then mark remaining for loading
-            foreach ($leaderboards as $leaderboard) {
+            // Process results
+            foreach ($leaderboards as $index => $leaderboard) {
                 if (isset($leaderboard['id'])) {
-                    // Check cache first
-                    $cacheKey = "steam_leaderboard_rank_" . Auth::user()->steam_id . "_" . $leaderboard['id'];
-                    $cachedRank = Cache::pull($cacheKey);
+                    $cacheKey = "steam_leaderboard_rank_{$steamId}_{$leaderboard['id']}";
 
-                    if ($cachedRank) {
-                        // Use cached data immediately
-                        $leaderboard['rank_data'] = $cachedRank;
+                    if (isset($cachedRanks[$cacheKey]) && $cachedRanks[$cacheKey] !== null) {
+                        // Use cached data
+                        $leaderboard['rank_data'] = $cachedRanks[$cacheKey];
                         $this->userScoresLoading[$leaderboard['id']] = false;
                     } else {
                         // Mark for loading
@@ -79,13 +102,13 @@ class SteamLeaderboard extends Component
             // Show the leaderboards immediately with loading states
             $this->loading = false;
 
-            // If there are scores to load, render once and then load them
+            // If there are scores to load, load them
             if (!empty($idsToLoad)) {
-                // Dispatch to frontend to show loading state, then load scores
                 $this->dispatch('showUserScoreLoading');
-
-                // Use a small delay to allow the UI to update
                 $this->batchLoadUserScores($idsToLoad);
+            } else {
+                // Cache complete rankings if all data is available
+                $this->cacheCompleteRankings($steamId);
             }
         } else {
             $this->loading = false;
@@ -103,21 +126,27 @@ class SteamLeaderboard extends Component
 
         // Process in small batches to avoid timeouts
         $chunks = array_chunk($idsToLoad, 5);
+        $hasNewData = false;
 
         foreach ($chunks as $chunk) {
             foreach ($chunk as $item) {
                 $rankData = $service->getUserRank($steamId, $item['id']);
                 if ($rankData) {
                     $this->rankings[$item['index']]['rank_data'] = $rankData;
+                    $hasNewData = true;
                 }
                 $this->userScoresLoading[$item['id']] = false;
             }
         }
+
+        // Cache complete rankings after loading new data
+        if ($hasNewData) {
+            $this->cacheCompleteRankings($steamId);
+        }
     }
 
 
-    #[On('loadTop10DataAsync')]
-    public function loadTop10DataAsync($leaderboardName): void
+    private function loadTop10DataSync($leaderboardName): void
     {
         $service = new SteamLeaderboardService();
         $leaderboardId = $this->getLeaderboardId($leaderboardName);
@@ -132,8 +161,7 @@ class SteamLeaderboard extends Component
         $this->modalLoading = false;
     }
 
-    #[On('loadAroundMeDataAsync')]
-    public function loadAroundMeDataAsync($leaderboardName): void
+    private function loadAroundMeDataSync($leaderboardName): void
     {
         $service = new SteamLeaderboardService();
         $leaderboardId = $this->getLeaderboardId($leaderboardName);
@@ -148,30 +176,48 @@ class SteamLeaderboard extends Component
         $this->modalLoading = false;
     }
 
+    private function cacheCompleteRankings($steamId): void
+    {
+        // Only cache if all rankings have rank_data
+        $allComplete = true;
+        foreach ($this->rankings as $ranking) {
+            if (!isset($ranking['rank_data'])) {
+                $allComplete = false;
+                break;
+            }
+        }
+
+        if ($allComplete) {
+            $cacheKey = "steam_user_complete_rankings_{$steamId}";
+            Cache::put($cacheKey, $this->rankings, 1800); // 30 minutes
+        }
+    }
+
     public function viewTop10($leaderboardName)
     {
         $this->selectedLeaderboard = $leaderboardName;
         $this->selectedLeaderboardName = $this->getLeaderboardDisplayName($leaderboardName);
         $this->modalType = 'top10';
-        $this->modalLoading = true;
         $this->topEntries = [];
-
-        // Open modal immediately
         $this->showModal = true;
 
-        // Check cache first
         $leaderboardId = $this->getLeaderboardId($leaderboardName);
         if ($leaderboardId) {
+            // Try Cache::pull first (retrieve and remove)
             $cacheKey = "steam_leaderboard_entries_{$leaderboardId}_10";
-            $cachedEntries = Cache::get($cacheKey);
+            $cachedEntries = Cache::pull($cacheKey);
 
-            if ($cachedEntries) {
+            if ($cachedEntries !== null) {
                 // Use cached data immediately
                 $this->topEntries = $cachedEntries;
                 $this->modalLoading = false;
+
+                // Re-cache the data for future use
+                Cache::put($cacheKey, $cachedEntries, 1800);
             } else {
-                // Load data asynchronously
-                $this->dispatch('loadTop10DataAsync', $leaderboardName);
+                // Need to load data
+                $this->modalLoading = true;
+                $this->loadTop10DataSync($leaderboardName);
             }
         }
     }
@@ -181,25 +227,26 @@ class SteamLeaderboard extends Component
         $this->selectedLeaderboard = $leaderboardName;
         $this->selectedLeaderboardName = $this->getLeaderboardDisplayName($leaderboardName);
         $this->modalType = 'aroundme';
-        $this->modalLoading = true;
         $this->aroundMeEntries = [];
-
-        // Open modal immediately
         $this->showModal = true;
 
-        // Check cache first
         $leaderboardId = $this->getLeaderboardId($leaderboardName);
         if ($leaderboardId && Auth::check() && Auth::user()->steam_id) {
+            // Try Cache::pull first (retrieve and remove)
             $cacheKey = "steam_leaderboard_around_{$leaderboardId}_" . Auth::user()->steam_id . "_10";
-            $cachedEntries = Cache::get($cacheKey);
+            $cachedEntries = Cache::pull($cacheKey);
 
-            if ($cachedEntries) {
+            if ($cachedEntries !== null) {
                 // Use cached data immediately
                 $this->aroundMeEntries = $cachedEntries;
                 $this->modalLoading = false;
+
+                // Re-cache the data for future use
+                Cache::put($cacheKey, $cachedEntries, 1800);
             } else {
-                // Load data asynchronously
-                $this->dispatch('loadAroundMeDataAsync', $leaderboardName);
+                // Need to load data
+                $this->modalLoading = true;
+                $this->loadAroundMeDataSync($leaderboardName);
             }
         }
     }
@@ -325,14 +372,14 @@ class SteamLeaderboard extends Component
 
         if ($this->showOnlyWithScores) {
             $rankings = array_filter($rankings, function($ranking) {
-                return isset($ranking['rank_data']);
+                return isset($ranking['rank_data']['percentile']);
             });
         }
 
         // Sort by rank (lowest rank number first)
         usort($rankings, function($a, $b) {
-            $aRank = isset($a['rank_data']) ? $a['rank_data']['rank'] : PHP_INT_MAX;
-            $bRank = isset($b['rank_data']) ? $b['rank_data']['rank'] : PHP_INT_MAX;
+            $aRank = $a['rank_data']['rank'] ?? PHP_INT_MAX;
+            $bRank = $b['rank_data']['rank'] ?? PHP_INT_MAX;
             return $aRank <=> $bRank;
         });
 

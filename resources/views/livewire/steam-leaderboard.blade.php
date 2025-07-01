@@ -37,14 +37,15 @@
                                     <th class="p-3 text-center">Your Rank</th>
                                     <th class="p-3 text-center">Rank Group</th>
                                     <th class="p-3 text-center">Your Score</th>
+                                    <th class="p-3 text-center">Percentile</th>
                                     <th class="p-3 text-center">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($this->getFilteredRankings() as $ranking)
-                                    <tr class="border-b border-gray-600 hover:bg-gray-600 transition relative overflow-hidden" 
+                                    <tr class="border-b border-gray-600 hover:bg-gray-600 transition relative overflow-hidden"
                                         style="background-image: linear-gradient(rgba(55, 65, 81, 0.85), rgba(55, 65, 81, 0.95)), url('{{ $this->getLevelImage($ranking['name']) }}'); background-size: cover; background-position: center;">
-                                        
+
                                         <td class="p-3 relative z-10">
                                             <div class="flex items-center gap-4">
                                                 <div class="flex-shrink-0">
@@ -55,25 +56,28 @@
                                                          onerror="this.src='/img/levels/default.png'">
                                                 </div>
                                                 <div>
-                                                    <h4 class="text-white font-semibold text-lg">{{ $ranking['display_name'] }}</h4>
-                                                    <p class="text-gray-300 text-sm">{{ ucfirst(str_replace('_', ' ', $ranking['name'])) }}</p>
+                                                    <h4 class="text-white font-semibold text-lg drop-shadow-lg">{{ $ranking['display_name'] }}</h4>
+                                                    <p class="text-gray-300 text-sm drop-shadow-lg">{{ ucfirst(str_replace('_', ' ', $ranking['name'])) }}</p>
                                                 </div>
                                             </div>
                                         </td>
-                                        @if(isset($ranking['rank_data']))
+                                        @if(isset($ranking['rank_data']['percentile']))
                                             @php
                                                 $rankGroup = $this->getRankGroup($ranking['rank_data']['percentile']);
                                             @endphp
                                             <td class="p-3 text-center relative z-10">
-                                                <span class="text-lg font-bold text-green-400">#{{ number_format($ranking['rank_data']['rank']) }}</span>
+                                                <span class="text-lg font-bold text-green-400 drop-shadow-lg">#{{ number_format($ranking['rank_data']['rank']) }}</span>
                                             </td>
                                             <td class="p-3 text-center relative z-10">
-                                                <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold {{ $rankGroup['color'] }} {{ $rankGroup['bg'] }} border {{ $rankGroup['border'] }}">
+                                                <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold {{ $rankGroup['color'] }} {{ $rankGroup['bg'] }} border {{ $rankGroup['border'] }} drop-shadow-lg">
                                                     {{ $rankGroup['name'] }}
                                                 </span>
                                             </td>
                                             <td class="p-3 text-center text-white relative z-10">
-                                                <span>{{ number_format($ranking['rank_data']['score'] / 1000, 3) }}</span>
+                                                <span class="drop-shadow-lg">{{ number_format($ranking['rank_data']['score'] / 1000, 3) }}</span>
+                                            </td>
+                                            <td class="p-3 text-center text-white relative z-10">
+                                                <span class="drop-shadow-lg">Top {{ number_format($ranking['rank_data']['percentile'], 1) }}%</span>
                                             </td>
                                         @elseif(isset($userScoresLoading[$ranking['id']]) && $userScoresLoading[$ranking['id']])
                                             <td class="p-3 text-center relative z-10">
@@ -85,7 +89,11 @@
                                             <td class="p-3 text-center relative z-10">
                                                 <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500 mx-auto"></div>
                                             </td>
+                                            <td class="p-3 text-center relative z-10">
+                                                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500 mx-auto"></div>
+                                            </td>
                                         @else
+                                            <td class="p-3 text-center text-gray-400 relative z-10">-</td>
                                             <td class="p-3 text-center text-gray-400 relative z-10">-</td>
                                             <td class="p-3 text-center text-gray-400 relative z-10">-</td>
                                             <td class="p-3 text-center text-gray-400 relative z-10">-</td>
