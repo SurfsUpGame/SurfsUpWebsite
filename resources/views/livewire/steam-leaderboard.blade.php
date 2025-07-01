@@ -71,42 +71,45 @@
                         </thead>
                         <tbody>
                             @foreach($this->getFilteredRankings() as $ranking)
-                                <tr class="border-b border-gray-600 hover:bg-gray-600 transition">
-                                    <td class="p-3">
+                                <tr class="border-b border-gray-600 hover:bg-gray-600 transition relative overflow-hidden" 
+                                    style="background-image: linear-gradient(rgba(55, 65, 81, 0.85), rgba(55, 65, 81, 0.95)), url('{{ $this->getLevelImage($ranking['name']) }}'); background-size: cover; background-position: center;">
+                                    <td class="p-3 relative z-10">
                                         <div class="flex items-center gap-3">
                                             <img src="{{ $this->getLevelImage($ranking['name']) }}" 
                                                  alt="{{ $ranking['display_name'] }}" 
-                                                 class="w-12 h-12 rounded-lg object-cover border border-gray-600"
+                                                 class="w-12 h-12 rounded-lg object-cover border border-gray-400 drop-shadow-lg"
                                                  onerror="this.src='/img/levels/default.png'">
-                                            <h4 class="text-white font-semibold">{{ $ranking['display_name'] }}</h4>
+                                            <h4 class="text-white font-semibold drop-shadow-lg">{{ $ranking['display_name'] }}</h4>
                                         </div>
                                     </td>
                                     @if(isset($ranking['rank_data']))
                                         @php
                                             $rankGroup = $this->getRankGroup($ranking['rank_data']['percentile']);
                                         @endphp
-                                        <td class="p-3 text-center">
-                                            <span class="text-lg font-bold text-green-400">#{{ number_format($ranking['rank_data']['rank']) }}</span>
+                                        <td class="p-3 text-center relative z-10">
+                                            <span class="text-lg font-bold text-green-400 drop-shadow-lg">#{{ number_format($ranking['rank_data']['rank']) }}</span>
                                         </td>
-                                        <td class="p-3 text-center">
-                                            <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold {{ $rankGroup['color'] }} {{ $rankGroup['bg'] }} border {{ $rankGroup['border'] }}">
+                                        <td class="p-3 text-center relative z-10">
+                                            <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold {{ $rankGroup['color'] }} {{ $rankGroup['bg'] }} border {{ $rankGroup['border'] }} drop-shadow-lg">
                                                 {{ $rankGroup['name'] }}
                                             </span>
                                         </td>
-                                        <td class="p-3 text-center text-white">{{ number_format($ranking['rank_data']['score'] / 1000, 3) }}</td>
+                                        <td class="p-3 text-center text-white relative z-10">
+                                            <span class="drop-shadow-lg">{{ number_format($ranking['rank_data']['score'] / 1000, 3) }}</span>
+                                        </td>
                                     @else
-                                        <td class="p-3 text-center text-gray-400">-</td>
-                                        <td class="p-3 text-center text-gray-400">-</td>
-                                        <td class="p-3 text-center text-gray-400">-</td>
+                                        <td class="p-3 text-center text-gray-400 relative z-10">-</td>
+                                        <td class="p-3 text-center text-gray-400 relative z-10">-</td>
+                                        <td class="p-3 text-center text-gray-400 relative z-10">-</td>
                                     @endif
-                                    <td class="p-3 text-center">
+                                    <td class="p-3 text-center relative z-10">
                                         <div class="flex gap-2 justify-center">
                                             <button wire:click="viewTop10('{{ $ranking['name'] }}')"
-                                                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition">
+                                                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition drop-shadow-lg">
                                                 Top 10
                                             </button>
                                             <button wire:click="viewAroundMe('{{ $ranking['name'] }}')"
-                                                    class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition">
+                                                    class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition drop-shadow-lg">
                                                 Around Me
                                             </button>
                                         </div>
