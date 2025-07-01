@@ -62,7 +62,7 @@
                         <div>
                             <span class="text-gray-300">
                                 <i class="fas fa-trophy text-yellow-500"></i>
-                                {{ count(array_filter($rankings, function($ranking) { return isset($ranking['rank_data']['percentile']); })) }} maps with scores
+                                {{ count(array_filter($rankings, function($ranking) { return isset($ranking['rank_data']['percentile']); })) }} / {{ $total_maps }} maps completed
                             </span>
                             <p class="text-xs text-gray-400">
                                 Steam ID: {{ $steamId }} |
@@ -207,11 +207,11 @@
             const modal = document.getElementById('imageModal');
             const modalImage = document.getElementById('modalImage');
             const modalImageName = document.getElementById('modalImageName');
-            
+
             modalImage.src = imagePath;
             modalImage.alt = displayName;
             modalImageName.textContent = displayName;
-            
+
             modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden'; // Prevent background scrolling
         }

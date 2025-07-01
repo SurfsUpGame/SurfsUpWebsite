@@ -56,9 +56,14 @@ class LeaderboardController extends Controller
             return $aRank <=> $bRank;
         });
 
+
+        $service = new SteamLeaderboardService();
+        $total_maps = $service->getLeaderboards();
+
         return view('leaderboard.show', [
             'user' => $user,
             'rankings' => $rankings,
+            'total_maps' => count($total_maps),
             'steamId' => $steamId
         ]);
     }
