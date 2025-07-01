@@ -30,7 +30,7 @@ class SteamLeaderboardService
         $cacheKey = "steam_leaderboards_{$this->appId}";
 
         // Try to pull from cache first (retrieve and remove)
-        $cachedLeaderboards = Cache::pull($cacheKey);
+        $cachedLeaderboards = Cache::get($cacheKey);
         if ($cachedLeaderboards !== null) {
             return $cachedLeaderboards;
         }
@@ -99,7 +99,7 @@ class SteamLeaderboardService
         $cacheKey = "steam_leaderboard_rank_{$steamId}_{$leaderboardId}";
 
         // Try to pull from cache first (retrieve and remove)
-        $cachedRank = Cache::pull($cacheKey);
+        $cachedRank = Cache::get($cacheKey);
         if ($cachedRank !== null) {
             return $cachedRank;
         }

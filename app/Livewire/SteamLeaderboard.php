@@ -45,7 +45,7 @@ class SteamLeaderboard extends Component
 
             // Check for cached complete rankings first
             $completeRankingsCacheKey = "steam_user_complete_rankings_{$steamId}";
-            $cachedCompleteRankings = Cache::pull($completeRankingsCacheKey);
+            $cachedCompleteRankings = Cache::get($completeRankingsCacheKey);
 
             if ($cachedCompleteRankings) {
                 // Use complete cached rankings
@@ -203,9 +203,8 @@ class SteamLeaderboard extends Component
 
         $leaderboardId = $this->getLeaderboardId($leaderboardName);
         if ($leaderboardId) {
-            // Try Cache::pull first (retrieve and remove)
             $cacheKey = "steam_leaderboard_entries_{$leaderboardId}_10";
-            $cachedEntries = Cache::pull($cacheKey);
+            $cachedEntries = Cache::get($cacheKey);
 
             if ($cachedEntries !== null) {
                 // Use cached data immediately
@@ -232,9 +231,8 @@ class SteamLeaderboard extends Component
 
         $leaderboardId = $this->getLeaderboardId($leaderboardName);
         if ($leaderboardId && Auth::check() && Auth::user()->steam_id) {
-            // Try Cache::pull first (retrieve and remove)
             $cacheKey = "steam_leaderboard_around_{$leaderboardId}_" . Auth::user()->steam_id . "_10";
-            $cachedEntries = Cache::pull($cacheKey);
+            $cachedEntries = Cache::get($cacheKey);
 
             if ($cachedEntries !== null) {
                 // Use cached data immediately

@@ -7,7 +7,7 @@
     <link rel="icon" type="image/x-icon" href="{{ asset('/img/favicon.ico') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://kit.fontawesome.com/d251d3e9b0.js" crossorigin="anonymous"></script>
-    
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ url()->current() }}">
@@ -31,7 +31,7 @@
                 🌊 <span>SurfsUp</span>
             </a>
         </h1>
-        
+
         <div class="flex items-center gap-4">
             <a href="https://store.steampowered.com/app/3454830/SurfsUp/" target="_blank" class="flex items-center gap-2 hover:underline transition">
                 <i class="fa-brands fa-steam"></i> Steam
@@ -56,7 +56,7 @@
                         <p class="text-gray-400">Steam ID: {{ $steamId }}</p>
                     </div>
                 </div>
-                
+
                 <div class="flex items-center gap-4">
                     <span class="text-gray-300">
                         <i class="fas fa-trophy text-yellow-500"></i>
@@ -85,55 +85,78 @@
                             </thead>
                             <tbody>
                                 @foreach($rankings as $ranking)
-                                    @php
-                                        $rankData = $ranking['rank_data'];
-                                        $percentile = $rankData['percentile'];
-                                        
-                                        // Get rank group
-                                        if ($percentile >= 99) {
-                                            $rankGroup = ['name' => 'Legend', 'color' => 'text-yellow-400', 'bg' => 'bg-yellow-900', 'border' => 'border-yellow-400'];
-                                        } elseif ($percentile >= 90) {
-                                            $rankGroup = ['name' => 'Grand Master', 'color' => 'text-purple-400', 'bg' => 'bg-purple-900', 'border' => 'border-purple-400'];
-                                        } elseif ($percentile >= 75) {
-                                            $rankGroup = ['name' => 'Master', 'color' => 'text-blue-400', 'bg' => 'bg-blue-900', 'border' => 'border-blue-400'];
-                                        } elseif ($percentile >= 50) {
-                                            $rankGroup = ['name' => 'Intermediate', 'color' => 'text-green-400', 'bg' => 'bg-green-900', 'border' => 'border-green-400'];
-                                        } else {
-                                            $rankGroup = ['name' => 'Novice', 'color' => 'text-gray-400', 'bg' => 'bg-gray-700', 'border' => 'border-gray-400'];
-                                        }
-                                        
-                                        $imageName = strtolower($ranking['name']) . '.png';
-                                        $imagePath = '/img/levels/' . $imageName;
-                                        if (!file_exists(public_path($imagePath))) {
-                                            $imagePath = '/img/levels/default.png';
-                                        }
-                                    @endphp
-                                    <tr class="border-b border-gray-600 hover:bg-gray-600 transition relative overflow-hidden" 
-                                        style="background-image: linear-gradient(rgba(55, 65, 81, 0.85), rgba(55, 65, 81, 0.95)), url('{{ $imagePath }}'); background-size: cover; background-position: center;">
-                                        <td class="p-3 relative z-10">
-                                            <div class="flex items-center gap-3">
-                                                <img src="{{ $imagePath }}" 
-                                                     alt="{{ $ranking['display_name'] }}" 
-                                                     class="w-12 h-12 rounded-lg object-cover border border-gray-400 drop-shadow-lg"
-                                                     onerror="this.src='/img/levels/default.png'">
-                                                <h4 class="text-white font-semibold drop-shadow-lg">{{ $ranking['display_name'] }}</h4>
-                                            </div>
-                                        </td>
-                                        <td class="p-3 text-center relative z-10">
-                                            <span class="text-lg font-bold text-green-400 drop-shadow-lg">#{{ number_format($rankData['rank']) }}</span>
-                                        </td>
-                                        <td class="p-3 text-center relative z-10">
-                                            <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold {{ $rankGroup['color'] }} {{ $rankGroup['bg'] }} border {{ $rankGroup['border'] }} drop-shadow-lg">
-                                                {{ $rankGroup['name'] }}
-                                            </span>
-                                        </td>
-                                        <td class="p-3 text-center text-white relative z-10">
-                                            <span class="drop-shadow-lg">{{ number_format($rankData['score'] / 1000, 3) }}</span>
-                                        </td>
-                                        <td class="p-3 text-center text-white relative z-10">
-                                            <span class="drop-shadow-lg">Top {{ number_format($percentile, 1) }}%</span>
-                                        </td>
-                                    </tr>
+                                    @if(isset($ranking['rank_data']['percentile']))
+                                        @php
+                                            $rankData = $ranking['rank_data'];
+                                            $percentile = isset($rankData['percentile']) ? $rankData['percentile'] : null ;
+
+                                            // Get rank group
+                                            if ($percentile >= 99) {
+                                                $rankGroup = ['name' => 'Legend', 'color' => 'text-yellow-400', 'bg' => 'bg-yellow-900', 'border' => 'border-yellow-400'];
+                                            } elseif ($percentile >= 90) {
+                                                $rankGroup = ['name' => 'Grand Master', 'color' => 'text-purple-400', 'bg' => 'bg-purple-900', 'border' => 'border-purple-400'];
+                                            } elseif ($percentile >= 75) {
+                                                $rankGroup = ['name' => 'Master', 'color' => 'text-blue-400', 'bg' => 'bg-blue-900', 'border' => 'border-blue-400'];
+                                            } elseif ($percentile >= 50) {
+                                                $rankGroup = ['name' => 'Intermediate', 'color' => 'text-green-400', 'bg' => 'bg-green-900', 'border' => 'border-green-400'];
+                                            } elseif ($percentile > 0) {
+                                                $rankGroup = ['name' => 'Novice', 'color' => 'text-gray-400', 'bg' => 'bg-gray-700', 'border' => 'border-gray-400'];
+                                            } else {
+                                                $rankGroup = ['name' => '-', 'color' => 'text-white-400', 'bg' => 'bg-none', 'border' => 'border-none'];
+                                            }
+
+                                            $imageName = strtolower($ranking['name']) . '.png';
+                                            $imagePath = '/img/levels/' . $imageName;
+                                            if (!file_exists(public_path($imagePath))) {
+                                                $imagePath = '/img/levels/default.png';
+                                            }
+                                        @endphp
+                                        <tr class="border-b border-gray-600 hover:bg-gray-600 transition relative overflow-hidden"
+                                            style="background-image: linear-gradient(rgba(55, 65, 81, 0.85), rgba(55, 65, 81, 0.95)), url('{{ $imagePath }}'); background-size: cover; background-position: center;">
+                                            <td class="p-3 relative z-10">
+                                                <div class="flex items-center gap-3">
+                                                    <img src="{{ $imagePath }}"
+                                                         alt="{{ $ranking['display_name'] }}"
+                                                         class="w-12 h-12 rounded-lg object-cover border border-gray-400 drop-shadow-lg"
+                                                         onerror="this.src='/img/levels/default.png'">
+                                                    <h4 class="text-white font-semibold drop-shadow-lg">{{ $ranking['display_name'] }}</h4>
+                                                </div>
+                                            </td>
+                                            <td class="p-3 text-center relative z-10">
+                                                @if (isset($rankData['rank']))
+                                                    <span class="text-lg font-bold text-green-400 drop-shadow-lg">#{{ number_format($rankData['rank']) }}</span>
+                                                @else
+                                                    <span class="text-lg drop-shadow-lg">-</span>
+                                                @endif
+                                            </td>
+                                            <td class="p-3 text-center relative z-10">
+                                                @if($rankGroup['name'] != '-')
+                                                    <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold {{ $rankGroup['color'] }} {{ $rankGroup['bg'] }} border {{ $rankGroup['border'] }} drop-shadow-lg">
+                                                        {{ $rankGroup['name'] }}
+                                                    </span>
+                                                @else
+                                                    <span class="inline-block px-3 py-1 rounded-full text-sm {{ $rankGroup['color'] }} {{ $rankGroup['bg'] }} border {{ $rankGroup['border'] }} drop-shadow-lg">
+                                                        {{ $rankGroup['name'] }}
+                                                    </span>
+                                                @endif
+
+                                            </td>
+                                            <td class="p-3 text-center text-white relative z-10">
+                                                @if(isset($rankData['score']))
+                                                    <span class="drop-shadow-lg">{{ number_format($rankData['score'] / 1000, 3) }}</span>
+                                                @else
+                                                    <span class="drop-shadow-lg">-</span>
+                                                @endif
+                                            </td>
+                                            <td class="p-3 text-center text-white relative z-10">
+                                                @if($percentile > 0)
+                                                    <span class="drop-shadow-lg">Top {{ number_format($percentile, 1) }}%</span>
+                                                @else
+                                                    <span class="drop-shadow-lg">-</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endif
                                 @endforeach
                             </tbody>
                         </table>
@@ -167,6 +190,15 @@
                 });
             }
         }
+    </script>
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-H68DQ85G4C"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-H68DQ85G4C');
     </script>
 </body>
 </html>
