@@ -34,3 +34,9 @@ Route::middleware('auth')->group(function () {
 
 Route::post('logout', App\Livewire\Actions\Logout::class)
     ->name('logout');
+
+// Handle accidental GET requests to logout
+Route::get('logout', function () {
+    auth()->logout();
+    return redirect()->route('home');
+});
