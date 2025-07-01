@@ -51,45 +51,96 @@
             <a href="https://twitter.com/bearlikelion" target="_blank" class="flex items-center gap-2 hover:underline transition">
                 <i class="fa-brands fa-x-twitter"></i> Twitter / X
             </a>
-            <a href="https://tiktok.com/surfsup.game" target="_blank" class="flex items-center gap-2 hover:underline transition">
+            <a href="https://tiktok.com/@surfsup.game" target="_blank" class="flex items-center gap-2 hover:underline transition">
                 <i class="fa-brands fa-tiktok"></i> Tiktok
             </a>
             <a href="https://youtube.com/@bearlikelion" target="_blank" class="flex items-center gap-2 hover:underline transition">
                 <i class="fa-brands fa-youtube"></i> YouTube
             </a>
+            <!-- Steam Login/User Avatar -->
+            @auth
+                <div x-data="{ dropdownOpen: false }" class="relative">
+                    <button @click="dropdownOpen = !dropdownOpen" class="flex items-center gap-2 hover:opacity-80 transition">
+                        <img src="{{ auth()->user()->avatar }}" alt="{{ auth()->user()->name }}" class="w-10 h-10 rounded-full border-2 border-green-500">
+                        <span class="text-white">{{ auth()->user()->name }}</span>
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <div x-show="dropdownOpen"
+                         @click.away="dropdownOpen = false"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 transform scale-95"
+                         x-transition:enter-end="opacity-100 transform scale-100"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 transform scale-100"
+                         x-transition:leave-end="opacity-0 transform scale-95"
+                         class="absolute right-0 mt-2 w-56 bg-gray-800 rounded-lg shadow-lg py-2 z-50">
+                        <a href="https://bearlikelion.github.io/SurfsUpSDK/" target="_blank" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition">
+                            <i class="fas fa-code mr-2"></i> Map Making SDK
+                        </a>
+                        <a href="https://trello.com/b/6w7tMciD/surfsup-roadmap" target="_blank" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition">
+                            <i class="fas fa-map mr-2"></i> View Roadmap
+                        </a>
+                        <hr class="my-2 border-gray-700">
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @else
+                <a href="{{ route('auth.steam') }}" class="flex items-center gap-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-white transition">
+                    <i class="fa-brands fa-steam"></i> Login with Steam
+                </a>
+            @endauth
         </div>
     </header>
 
+    @auth
+        <!-- Leaderboard Section -->
+        <section class="parallax mt-10 py-16 bg-gray-950">
+            <div class="max-w-6xl mx-auto px-6">
+                @livewire('steam-leaderboard')
+            </div>
+        </section>
+    @endauth
 
     <!-- Parallax Hero -->
-    <section class="parallax flex pb-6 items-center justify-center">
-        <div class="bg-gray-900 bg-opacity-60 p-8 rounded-xl text-center max-w-2xl">
-            <h1 class="text-4xl md:text-6xl font-bold mb-4">🌊 SurfsUp</h1>
-            <p class="text-lg md:text-xl mb-6">
-                Free-to-Play High Speed Multiplayer Precision Platformer
-            </p>
+    @guest
+        <section class="parallax flex pb-6 items-center justify-center">
+            <div class="bg-gray-900 bg-opacity-60 p-8 rounded-xl text-center max-w-2xl">
+                <h1 class="text-4xl md:text-6xl font-bold mb-4">🌊 SurfsUp</h1>
+                <p class="text-lg md:text-xl mb-6">
+                    Free-to-Play High Speed Multiplayer Precision Platformer
+                </p>
 
-            <!-- 🔗 Embedded Links in Hero -->
-            <div class="flex flex-col md:flex-row gap-4 justify-center">
-                <a href="https://bearlikelion.github.io/SurfsUpSDK/" target="_blank" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg text-white transition">
-                    <!-- Heroicon: Code Bracket -->
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 18l6-6-6-6M8 6l-6 6 6 6" />
-                    </svg>
-                    Map Making SDK
-                </a>
+                <!-- Embedded Links in Hero -->
+                <div class="flex flex-col md:flex-row gap-4 justify-center">
+                    <a href="https://bearlikelion.github.io/SurfsUpSDK/" target="_blank" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg text-white transition">
+                        <!-- Heroicon: Code Bracket -->
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 18l6-6-6-6M8 6l-6 6 6 6" />
+                        </svg>
+                        Map Making SDK
+                    </a>
 
-                <a href="https://trello.com/b/6w7tMciD/surfsup-roadmap" target="_blank" class="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 px-6 py-3 rounded-lg text-white transition">
-                    <!-- Heroicon: Map -->
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5 2V6l5-2m0 16l6-2m-6 2V4m6 14l5 2V6l-5-2m0 16V4" />
-                    </svg>
-                    View Roadmap
-                </a>
+                    <a href="https://trello.com/b/6w7tMciD/surfsup-roadmap" target="_blank" class="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 px-6 py-3 rounded-lg text-white transition">
+                        <!-- Heroicon: Map -->
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5 2V6l5-2m0 16l6-2m-6 2V4m6 14l5 2V6l-5-2m0 16V4" />
+                        </svg>
+                        View Roadmap
+                    </a>
+                </div>
+
             </div>
-
-        </div>
-    </section>
+        </section>
+    @endguest
 
     <!-- Embedded Media Panel -->
     <section class="bg-gray-900 py-16 px-6">

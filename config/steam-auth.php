@@ -35,6 +35,6 @@ return [
     | requests from a single key.
     |
     */
-    'api_keys' => explode(',', env('STEAM_AUTH_API_KEYS')),
+    'api_keys' => explode(',', env('STEAM_AUTH_API_KEY')),
 
 ];

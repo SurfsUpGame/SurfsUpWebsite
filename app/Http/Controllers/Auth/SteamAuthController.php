@@ -5,60 +5,83 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Auth;
 
 use App\Models\User;
-use GuzzleHttp\Client;
-use GuzzleHttp\Psr7\HttpFactory;
-use GuzzleHttp\Psr7\Uri;
+use App\Services\SteamOpenID;
 use Illuminate\Auth\AuthManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
-use Ilzrv\LaravelSteamAuth\Exceptions\Authentication\SteamResponseNotValidAuthenticationException;
-use Ilzrv\LaravelSteamAuth\Exceptions\Validation\ValidationException;
-use Ilzrv\LaravelSteamAuth\SteamAuthenticator;
-use Ilzrv\LaravelSteamAuth\SteamUserDto;
+use Illuminate\Support\Facades\Log;
 
 final class SteamAuthController
 {
-    public function __invoke(
-        Request $request,
-        Redirector $redirector,
-        Client $client,
-        HttpFactory $httpFactory,
+    private SteamOpenID $steam;
+    private AuthManager $authManager;
+    private Redirector $redirector;
+
+    public function __construct(
+        SteamOpenID $steam,
         AuthManager $authManager,
-    ): RedirectResponse {
-        $steamAuthenticator = new SteamAuthenticator(
-            new Uri($request->getUri()),
-            $client,
-            $httpFactory,
-        );
-
-        try {
-            $steamAuthenticator->auth();
-        } catch (ValidationException|SteamResponseNotValidAuthenticationException) {
-            return $redirector->to(
-                $steamAuthenticator->buildAuthUrl()
-            );
-        }
-
-        $steamUser = $steamAuthenticator->getSteamUser();
-
-        $authManager->login(
-            $this->firstOrCreate($steamUser),
-            true
-        );
-
-        return $redirector->to('/');
+        Redirector $redirector
+    ) {
+        $this->steam = $steam;
+        $this->authManager = $authManager;
+        $this->redirector = $redirector;
     }
 
-    private function firstOrCreate(SteamUserDto $steamUser): User
+    public function login(): RedirectResponse
     {
-        return User::firstOrCreate([
-            'steam_id' => $steamUser->getSteamId(),
-        ], [
-            'name' => $steamUser->getPersonaName(),
-            'avatar' => $steamUser->getAvatarFull(),
-            // 'player_level' => $steamUser->getPlayerLevel(),
-            // ...and other what you need
-        ]);
+        return $this->redirector->to($this->steam->getAuthUrl());
+    }
+
+    public function callback(Request $request): RedirectResponse
+    {
+        Log::info('Steam callback received', $request->all());
+
+        $steamId = $this->steam->validate($request->all());
+
+        Log::info('Steam ID from validation', ['steam_id' => $steamId]);
+
+        if (!$steamId) {
+            return $this->redirector->route('filament.admin.auth.login')
+                ->with('error', 'Steam authentication failed.');
+        }
+
+        $steamUser = $this->steam->getUserInfo($steamId);
+
+        Log::info('Steam user info', ['steam_user' => $steamUser]);
+
+        if (!$steamUser) {
+            return $this->redirector->route('filament.admin.auth.login')
+                ->with('error', 'Could not retrieve Steam user information.');
+        }
+
+        $user = $this->firstOrCreate($steamId, $steamUser);
+
+        Log::info('User created/found', ['user' => $user->toArray()]);
+
+        $this->authManager->login($user, true);
+
+        return $this->redirector->intended(route('home', absolute: false).'?verified=1');
+    }
+
+    private function firstOrCreate(string $steamId, array $steamUser): User
+    {
+        try {
+            return User::firstOrCreate([
+                'steam_id' => $steamId,
+            ], [
+                'name' => $steamUser['personaname'],
+                'avatar' => $steamUser['avatarfull'],
+                'email' => $steamId . '@steamauth.local',
+                'password' => bcrypt(str()->random(32)),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to create/find user', [
+                'error' => $e->getMessage(),
+                'steam_id' => $steamId,
+                'steam_user' => $steamUser
+            ]);
+            throw $e;
+        }
     }
 }
