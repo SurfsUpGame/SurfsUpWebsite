@@ -29,6 +29,13 @@ class SteamLeaderboardService
     {
         $cacheKey = "steam_leaderboards_{$this->appId}";
 
+        // Try to pull from cache first (retrieve and remove)
+        $cachedLeaderboards = Cache::pull($cacheKey);
+        if ($cachedLeaderboards !== null) {
+            return $cachedLeaderboards;
+        }
+
+        // If not in cache, fetch and cache the result
         return Cache::remember($cacheKey, 7200, function () {
             if (!$this->publisherApiKey) {
                 Log::warning('No Steam Publisher API key configured for leaderboards');
@@ -91,6 +98,13 @@ class SteamLeaderboardService
     {
         $cacheKey = "steam_leaderboard_rank_{$steamId}_{$leaderboardId}";
 
+        // Try to pull from cache first (retrieve and remove)
+        $cachedRank = Cache::pull($cacheKey);
+        if ($cachedRank !== null) {
+            return $cachedRank;
+        }
+
+        // If not in cache, fetch and cache the result
         return Cache::remember($cacheKey, 1800, function () use ($steamId, $leaderboardId) {
             if (!$this->publisherApiKey) {
                 Log::warning('No Steam Publisher API key configured for user rank');
@@ -130,10 +144,6 @@ class SteamLeaderboardService
                             'score' => $entry['score'] ?? 0,
                             'total_entries' => $totalEntries,
                             'percentile' => $percentile,
-                            'details' => [
-                                'time' => isset($entry['ugcid']) ? '-' : '-',
-                                'date' => now()->format('Y-m-d'),
-                            ],
                         ];
                     }
                 }
@@ -184,17 +194,17 @@ class SteamLeaderboardService
                     if (isset($data['leaderboardEntryInformation']['leaderboardEntries'])) {
                         $entries = [];
                         $steamIds = [];
-                        
+
                         // Collect all Steam IDs first
                         foreach ($data['leaderboardEntryInformation']['leaderboardEntries'] as $entry) {
                             if (!empty($entry['steamID'])) {
                                 $steamIds[] = $entry['steamID'];
                             }
                         }
-                        
+
                         // Batch fetch all user names at once
                         $userNames = $this->getSteamUserNamesBatch($steamIds);
-                        
+
                         // Build entries with fetched names
                         foreach ($data['leaderboardEntryInformation']['leaderboardEntries'] as $entry) {
                             $steamId = $entry['steamID'] ?? '';
@@ -259,17 +269,17 @@ class SteamLeaderboardService
                     if (isset($data['leaderboardEntryInformation']['leaderboardEntries'])) {
                         $entries = [];
                         $steamIds = [];
-                        
+
                         // Collect all Steam IDs first
                         foreach ($data['leaderboardEntryInformation']['leaderboardEntries'] as $entry) {
                             if (!empty($entry['steamID'])) {
                                 $steamIds[] = $entry['steamID'];
                             }
                         }
-                        
+
                         // Batch fetch all user names at once
                         $userNames = $this->getSteamUserNamesBatch($steamIds);
-                        
+
                         // Build entries with fetched names
                         foreach ($data['leaderboardEntryInformation']['leaderboardEntries'] as $entry) {
                             $entryId = $entry['steamID'] ?? '';
@@ -317,7 +327,7 @@ class SteamLeaderboardService
         // Remove duplicates
         $steamIds = array_unique($steamIds);
         $results = [];
-        
+
         // Check cache for each ID first
         $uncachedIds = [];
         foreach ($steamIds as $steamId) {
@@ -329,15 +339,15 @@ class SteamLeaderboardService
                 $uncachedIds[] = $steamId;
             }
         }
-        
+
         // If all are cached, return early
         if (empty($uncachedIds)) {
             return $results;
         }
-        
+
         // Steam API allows up to 100 Steam IDs per request
         $chunks = array_chunk($uncachedIds, 100);
-        
+
         foreach ($chunks as $chunk) {
             try {
                 $response = Http::timeout(5)->get('https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/', [
@@ -351,11 +361,11 @@ class SteamLeaderboardService
                         foreach ($data['response']['players'] as $player) {
                             $steamId = $player['steamid'] ?? '';
                             $personaName = $player['personaname'] ?? 'Player ' . substr($steamId, -4);
-                            
+
                             // Cache individual name
                             $cacheKey = "steam_user_name_$steamId";
                             Cache::put($cacheKey, $personaName, 3600);
-                            
+
                             $results[$steamId] = $personaName;
                         }
                     }
@@ -366,14 +376,14 @@ class SteamLeaderboardService
                 ]);
             }
         }
-        
+
         // Fill in any missing names with default
         foreach ($uncachedIds as $steamId) {
             if (!isset($results[$steamId])) {
                 $results[$steamId] = 'Player ' . substr($steamId, -4);
             }
         }
-        
+
         return $results;
     }
 
