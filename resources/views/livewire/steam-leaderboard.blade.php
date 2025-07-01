@@ -10,23 +10,76 @@
         </div>
     @else
         @auth
-            @if(count($rankings) > 0)
+            <!-- Filter Toggle -->
+            <div class="mb-4 flex items-center gap-3">
+                <label class="flex items-center gap-2 text-gray-300 cursor-pointer">
+                    <input type="checkbox" wire:model.live="showOnlyWithScores" class="rounded bg-gray-700 border-gray-600 text-green-600 focus:ring-green-500 focus:ring-offset-gray-800">
+                    <span class="text-sm">Show only maps with scores</span>
+                </label>
+                <span class="text-xs text-gray-400">
+                    ({{ count($this->getFilteredRankings()) }} of {{ count($rankings) }} maps)
+                </span>
+            </div>
+
+            @if(count($this->getFilteredRankings()) > 0)
                 <div class="overflow-x-auto mb-6">
                     <table class="w-full text-left bg-gray-700 rounded-lg">
                         <thead>
                             <tr class="text-gray-300 bg-gray-600">
-                                <th class="p-3 text-left">Leaderboard</th>
-                                <th class="p-3 text-center">Your Rank</th>
-                                <th class="p-3 text-center">Rank Group</th>
-                                <th class="p-3 text-center">Your Score</th>
+                                <th class="p-3 text-left">
+                                    <button wire:click="sortBy('name')" class="flex items-center gap-1 hover:text-white transition">
+                                        Leaderboard
+                                        @if($sortBy === 'name')
+                                            <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} text-xs"></i>
+                                        @else
+                                            <i class="fas fa-sort text-xs opacity-50"></i>
+                                        @endif
+                                    </button>
+                                </th>
+                                <th class="p-3 text-center">
+                                    <button wire:click="sortBy('rank')" class="flex items-center gap-1 hover:text-white transition mx-auto">
+                                        Your Rank
+                                        @if($sortBy === 'rank')
+                                            <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} text-xs"></i>
+                                        @else
+                                            <i class="fas fa-sort text-xs opacity-50"></i>
+                                        @endif
+                                    </button>
+                                </th>
+                                <th class="p-3 text-center">
+                                    <button wire:click="sortBy('percentile')" class="flex items-center gap-1 hover:text-white transition mx-auto">
+                                        Rank Group
+                                        @if($sortBy === 'percentile')
+                                            <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} text-xs"></i>
+                                        @else
+                                            <i class="fas fa-sort text-xs opacity-50"></i>
+                                        @endif
+                                    </button>
+                                </th>
+                                <th class="p-3 text-center">
+                                    <button wire:click="sortBy('score')" class="flex items-center gap-1 hover:text-white transition mx-auto">
+                                        Your Score
+                                        @if($sortBy === 'score')
+                                            <i class="fas fa-sort-{{ $sortDirection === 'asc' ? 'up' : 'down' }} text-xs"></i>
+                                        @else
+                                            <i class="fas fa-sort text-xs opacity-50"></i>
+                                        @endif
+                                    </button>
+                                </th>
                                 <th class="p-3 text-center">Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($rankings as $ranking)
+                            @foreach($this->getFilteredRankings() as $ranking)
                                 <tr class="border-b border-gray-600 hover:bg-gray-600 transition">
                                     <td class="p-3">
-                                        <h4 class="text-white font-semibold">{{ $ranking['display_name'] }}</h4>
+                                        <div class="flex items-center gap-3">
+                                            <img src="{{ $this->getLevelImage($ranking['name']) }}" 
+                                                 alt="{{ $ranking['display_name'] }}" 
+                                                 class="w-12 h-12 rounded-lg object-cover border border-gray-600"
+                                                 onerror="this.src='/img/levels/default.png'">
+                                            <h4 class="text-white font-semibold">{{ $ranking['display_name'] }}</h4>
+                                        </div>
                                     </td>
                                     @if(isset($ranking['rank_data']))
                                         @php
@@ -101,7 +154,6 @@
                                 <th class="pb-2 pr-4">Rank</th>
                                 <th class="pb-2 pr-4">Player</th>
                                 <th class="pb-2 pr-4">Score</th>
-                                <th class="pb-2">Time</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -123,7 +175,6 @@
                                         </td>
                                         <td class="py-3 pr-4 text-white">{{ $entry['persona_name'] }}</td>
                                         <td class="py-3 pr-4 text-green-400">{{ number_format($entry['score'] / 1000, 2) }}</td>
-                                        <td class="py-3 text-gray-400">{{ $entry['details']['time'] ?? '-' }}</td>
                                     </tr>
                                 @endforeach
                             @elseif($modalType === 'aroundme' && count($aroundMeEntries) > 0)

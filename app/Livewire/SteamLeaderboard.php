@@ -16,7 +16,9 @@ class SteamLeaderboard extends Component
     public $aroundMeEntries = [];
     public $showModal = false;
     public $modalType = null;
-    public $showOnlyWithScores = false;
+    public $showOnlyWithScores = true;
+    public $sortBy = 'rank';
+    public $sortDirection = 'asc';
 
     protected $leaderboardService;
 
@@ -118,7 +120,21 @@ class SteamLeaderboard extends Component
         }
         return $leaderboardName;
     }
-    
+
+    public function getLevelImage($levelName)
+    {
+        $imageName = strtolower($levelName) . '.png';
+        $imagePath = '/img/levels/' . $imageName;
+        
+        // Check if file exists in public directory
+        if (file_exists(public_path($imagePath))) {
+            return $imagePath;
+        }
+        
+        // Fallback to a default image or return null
+        return '/img/levels/default.png';
+    }
+
     public function getRankGroup($percentile)
     {
         if ($percentile >= 99) {
@@ -159,15 +175,59 @@ class SteamLeaderboard extends Component
         }
     }
 
+    public function sortBy($field)
+    {
+        if ($this->sortBy === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortBy = $field;
+            $this->sortDirection = 'asc';
+        }
+    }
+
     public function getFilteredRankings()
     {
+        $rankings = $this->rankings;
+
         if ($this->showOnlyWithScores) {
-            return array_filter($this->rankings, function($ranking) {
+            $rankings = array_filter($rankings, function($ranking) {
                 return isset($ranking['rank_data']);
             });
         }
-        
-        return $this->rankings;
+
+        // Sort rankings
+        usort($rankings, function($a, $b) {
+            $aValue = null;
+            $bValue = null;
+
+            // Get values based on sort field
+            switch ($this->sortBy) {
+                case 'rank':
+                    $aValue = isset($a['rank_data']) ? $a['rank_data']['rank'] : PHP_INT_MAX;
+                    $bValue = isset($b['rank_data']) ? $b['rank_data']['rank'] : PHP_INT_MAX;
+                    break;
+                case 'score':
+                    $aValue = isset($a['rank_data']) ? $a['rank_data']['score'] : -1;
+                    $bValue = isset($b['rank_data']) ? $b['rank_data']['score'] : -1;
+                    break;
+                case 'percentile':
+                    $aValue = isset($a['rank_data']) ? $a['rank_data']['percentile'] : -1;
+                    $bValue = isset($b['rank_data']) ? $b['rank_data']['percentile'] : -1;
+                    break;
+                default:
+                    $aValue = $a['display_name'] ?? $a['name'] ?? '';
+                    $bValue = $b['display_name'] ?? $b['name'] ?? '';
+                    return strcasecmp($aValue, $bValue);
+            }
+
+            if ($this->sortDirection === 'asc') {
+                return $aValue <=> $bValue;
+            } else {
+                return $bValue <=> $aValue;
+            }
+        });
+
+        return $rankings;
     }
 
     public function render()

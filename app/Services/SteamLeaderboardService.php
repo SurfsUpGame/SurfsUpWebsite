@@ -162,7 +162,7 @@ class SteamLeaderboardService
     {
         $cacheKey = "steam_leaderboard_entries_{$leaderboardId}_{$limit}";
 
-        return Cache::remember($cacheKey, 300, function () use ($leaderboardId, $limit) {
+        return Cache::remember($cacheKey, 900, function () use ($leaderboardId, $limit) {
             if (!$this->publisherApiKey) {
                 Log::warning('No Steam Publisher API key configured for leaderboard entries');
                 return [];
