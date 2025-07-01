@@ -29,7 +29,7 @@ class SteamLeaderboardService
     {
         $cacheKey = "steam_leaderboards_{$this->appId}";
 
-        return Cache::remember($cacheKey, 3600, function () {
+        return Cache::remember($cacheKey, 7200, function () {
             if (!$this->publisherApiKey) {
                 Log::warning('No Steam Publisher API key configured for leaderboards');
                 return [];
@@ -91,7 +91,7 @@ class SteamLeaderboardService
     {
         $cacheKey = "steam_leaderboard_rank_{$steamId}_{$leaderboardId}";
 
-        return Cache::remember($cacheKey, 900, function () use ($steamId, $leaderboardId) {
+        return Cache::remember($cacheKey, 1800, function () use ($steamId, $leaderboardId) {
             if (!$this->publisherApiKey) {
                 Log::warning('No Steam Publisher API key configured for user rank');
                 return null;
@@ -162,7 +162,7 @@ class SteamLeaderboardService
     {
         $cacheKey = "steam_leaderboard_entries_{$leaderboardId}_{$limit}";
 
-        return Cache::remember($cacheKey, 900, function () use ($leaderboardId, $limit) {
+        return Cache::remember($cacheKey, 1800, function () use ($leaderboardId, $limit) {
             if (!$this->publisherApiKey) {
                 Log::warning('No Steam Publisher API key configured for leaderboard entries');
                 return [];
@@ -178,33 +178,37 @@ class SteamLeaderboardService
                     'datarequest' => 'RequestGlobal',
                 ]);
 
-//                Log::info('Steam leaderboard entries API response', [
-//                    'leaderboard_id' => $leaderboardId,
-//                    'status' => $response->status(),
-//                    'body' => $response->body()
-//                ]);
-
                 if ($response->successful()) {
                     $data = $response->json();
 
                     if (isset($data['leaderboardEntryInformation']['leaderboardEntries'])) {
                         $entries = [];
+                        $steamIds = [];
+                        
+                        // Collect all Steam IDs first
                         foreach ($data['leaderboardEntryInformation']['leaderboardEntries'] as $entry) {
-                            // Get Steam user info for persona name
-                            $personaName = $this->getSteamUserName($entry['steamID'] ?? '');
-
+                            if (!empty($entry['steamID'])) {
+                                $steamIds[] = $entry['steamID'];
+                            }
+                        }
+                        
+                        // Batch fetch all user names at once
+                        $userNames = $this->getSteamUserNamesBatch($steamIds);
+                        
+                        // Build entries with fetched names
+                        foreach ($data['leaderboardEntryInformation']['leaderboardEntries'] as $entry) {
+                            $steamId = $entry['steamID'] ?? '';
                             $entries[] = [
                                 'rank' => $entry['rank'] ?? 0,
-                                'steam_id' => $entry['steamID'] ?? '',
+                                'steam_id' => $steamId,
                                 'score' => $entry['score'] ?? 0,
-                                'persona_name' => $personaName,
+                                'persona_name' => $userNames[$steamId] ?? 'Player ' . substr($steamId, -4),
                                 'details' => [
                                     'time' => '-',
                                 ],
                             ];
                         }
 
-                        Log::info('Successfully fetched Steam leaderboard entries', ['count' => count($entries)]);
                         return $entries;
                     }
                 }
@@ -221,7 +225,6 @@ class SteamLeaderboardService
                 ]);
             }
 
-            // No fallback - return empty array if real data unavailable
             return [];
         });
     }
@@ -233,7 +236,7 @@ class SteamLeaderboardService
     {
         $cacheKey = "steam_leaderboard_around_{$leaderboardId}_{$steamId}_{$limit}";
 
-        return Cache::remember($cacheKey, 900, function () use ($leaderboardId, $steamId, $limit) {
+        return Cache::remember($cacheKey, 1800, function () use ($leaderboardId, $steamId, $limit) {
             if (!$this->publisherApiKey) {
                 Log::warning('No Steam Publisher API key configured for leaderboard entries around user');
                 return [];
@@ -250,35 +253,38 @@ class SteamLeaderboardService
                     'datarequest' => 'RequestAroundUser',
                 ]);
 
-                Log::info('Steam leaderboard entries around user API response', [
-                    'leaderboard_id' => $leaderboardId,
-                    'steam_id' => $steamId,
-                    'status' => $response->status(),
-                    'body' => $response->body()
-                ]);
-
                 if ($response->successful()) {
                     $data = $response->json();
 
                     if (isset($data['leaderboardEntryInformation']['leaderboardEntries'])) {
                         $entries = [];
+                        $steamIds = [];
+                        
+                        // Collect all Steam IDs first
                         foreach ($data['leaderboardEntryInformation']['leaderboardEntries'] as $entry) {
-                            // Get Steam user info for persona name
-                            $personaName = $this->getSteamUserName($entry['steamID'] ?? '');
-
+                            if (!empty($entry['steamID'])) {
+                                $steamIds[] = $entry['steamID'];
+                            }
+                        }
+                        
+                        // Batch fetch all user names at once
+                        $userNames = $this->getSteamUserNamesBatch($steamIds);
+                        
+                        // Build entries with fetched names
+                        foreach ($data['leaderboardEntryInformation']['leaderboardEntries'] as $entry) {
+                            $entryId = $entry['steamID'] ?? '';
                             $entries[] = [
                                 'rank' => $entry['rank'] ?? 0,
-                                'steam_id' => $entry['steamID'] ?? '',
+                                'steam_id' => $entryId,
                                 'score' => $entry['score'] ?? 0,
-                                'persona_name' => $personaName,
-                                'is_current_user' => ($entry['steamID'] ?? '') === $steamId,
+                                'persona_name' => $userNames[$entryId] ?? 'Player ' . substr($entryId, -4),
+                                'is_current_user' => $entryId === $steamId,
                                 'details' => [
                                     'time' => '-',
                                 ],
                             ];
                         }
 
-                        Log::info('Successfully fetched Steam leaderboard entries around user', ['count' => count($entries)]);
                         return $entries;
                     }
                 }
@@ -295,45 +301,80 @@ class SteamLeaderboardService
                 ]);
             }
 
-            // No fallback - return empty array if real data unavailable
             return [];
         });
     }
 
     /**
-     * Get Steam user's persona name from Steam ID
+     * Get Steam users' persona names from Steam IDs in batch
      */
-    private function getSteamUserName(string $steamId): string
+    private function getSteamUserNamesBatch(array $steamIds): array
     {
-        if (empty($steamId) || !$this->apiKey) {
-            return 'Unknown Player';
+        if (empty($steamIds) || !$this->apiKey) {
+            return [];
         }
 
-        $cacheKey = "steam_user_name_{$steamId}";
-
-        return Cache::remember($cacheKey, 3600, function () use ($steamId) {
+        // Remove duplicates
+        $steamIds = array_unique($steamIds);
+        $results = [];
+        
+        // Check cache for each ID first
+        $uncachedIds = [];
+        foreach ($steamIds as $steamId) {
+            $cacheKey = "steam_user_name_$steamId";
+            $cachedName = Cache::get($cacheKey);
+            if ($cachedName !== null) {
+                $results[$steamId] = $cachedName;
+            } else {
+                $uncachedIds[] = $steamId;
+            }
+        }
+        
+        // If all are cached, return early
+        if (empty($uncachedIds)) {
+            return $results;
+        }
+        
+        // Steam API allows up to 100 Steam IDs per request
+        $chunks = array_chunk($uncachedIds, 100);
+        
+        foreach ($chunks as $chunk) {
             try {
                 $response = Http::timeout(5)->get('https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/', [
                     'key' => $this->apiKey,
-                    'steamids' => $steamId,
+                    'steamids' => implode(',', $chunk),
                 ]);
 
                 if ($response->successful()) {
                     $data = $response->json();
-                    if (isset($data['response']['players'][0]['personaname'])) {
-                        return $data['response']['players'][0]['personaname'];
+                    if (isset($data['response']['players'])) {
+                        foreach ($data['response']['players'] as $player) {
+                            $steamId = $player['steamid'] ?? '';
+                            $personaName = $player['personaname'] ?? 'Player ' . substr($steamId, -4);
+                            
+                            // Cache individual name
+                            $cacheKey = "steam_user_name_$steamId";
+                            Cache::put($cacheKey, $personaName, 3600);
+                            
+                            $results[$steamId] = $personaName;
+                        }
                     }
                 }
             } catch (\Exception $e) {
-                Log::warning('Failed to fetch Steam user name', [
-                    'steam_id' => $steamId,
+                Log::warning('Failed to batch fetch Steam user names', [
                     'error' => $e->getMessage()
                 ]);
             }
-
-            return 'Player ' . substr($steamId, -4);
-        });
+        }
+        
+        // Fill in any missing names with default
+        foreach ($uncachedIds as $steamId) {
+            if (!isset($results[$steamId])) {
+                $results[$steamId] = 'Player ' . substr($steamId, -4);
+            }
+        }
+        
+        return $results;
     }
-
 
 }

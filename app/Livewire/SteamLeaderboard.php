@@ -45,8 +45,17 @@ class SteamLeaderboard extends Component
             // Get all leaderboards first
             $leaderboards = $service->getLeaderboards();
             $this->rankings = [];
+            
+            // If no leaderboards found, return early
+            if (empty($leaderboards)) {
+                $this->loading = false;
+                return;
+            }
+            
+            // Collect all leaderboard IDs that need loading
+            $idsToLoad = [];
 
-            // Load cached scores first, then mark remaining for async loading
+            // Load cached scores first, then mark remaining for loading
             foreach ($leaderboards as $leaderboard) {
                 if (isset($leaderboard['id'])) {
                     // Check cache first
@@ -58,47 +67,54 @@ class SteamLeaderboard extends Component
                         $leaderboard['rank_data'] = $cachedRank;
                         $this->userScoresLoading[$leaderboard['id']] = false;
                     } else {
-                        // Mark for async loading
+                        // Mark for loading
                         $this->userScoresLoading[$leaderboard['id']] = true;
+                        $idsToLoad[] = ['id' => $leaderboard['id'], 'index' => count($this->rankings)];
                     }
                     
                     $this->rankings[] = $leaderboard;
                 }
             }
+            
+            // Show the leaderboards immediately with loading states
+            $this->loading = false;
+            
+            // If there are scores to load, render once and then load them
+            if (!empty($idsToLoad)) {
+                // Dispatch to frontend to show loading state, then load scores
+                $this->dispatch('showUserScoreLoading');
+                
+                // Use a small delay to allow the UI to update
+                $this->batchLoadUserScores($idsToLoad);
+            }
+        } else {
+            $this->loading = false;
         }
-
-        $this->loading = false;
-
-        // Now asynchronously load remaining user scores that weren't cached
-        $this->loadUserScores();
     }
 
-    public function loadUserScores(): void
-    {
-        if (!Auth::check() || !Auth::user()->steam_id) {
-            return;
-        }
-
-        // Use JavaScript to trigger individual score loading
-        $this->dispatch('startAsyncScoreLoading');
-    }
-
-    #[On('loadSingleUserScore')]
-    public function loadSingleUserScore($leaderboardId, $index): void
+    public function batchLoadUserScores($idsToLoad): void
     {
         if (!Auth::check() || !Auth::user()->steam_id) {
             return;
         }
 
         $service = new SteamLeaderboardService();
-        $rankData = $service->getUserRank(Auth::user()->steam_id, $leaderboardId);
-
-        if ($rankData) {
-            $this->rankings[$index]['rank_data'] = $rankData;
+        $steamId = Auth::user()->steam_id;
+        
+        // Process in small batches to avoid timeouts
+        $chunks = array_chunk($idsToLoad, 5);
+        
+        foreach ($chunks as $chunk) {
+            foreach ($chunk as $item) {
+                $rankData = $service->getUserRank($steamId, $item['id']);
+                if ($rankData) {
+                    $this->rankings[$item['index']]['rank_data'] = $rankData;
+                }
+                $this->userScoresLoading[$item['id']] = false;
+            }
         }
-
-        $this->userScoresLoading[$leaderboardId] = false;
     }
+
 
     #[On('loadTop10DataAsync')]
     public function loadTop10DataAsync($leaderboardName): void
