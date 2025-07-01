@@ -107,9 +107,10 @@ class SteamLeaderboard extends Component
         $leaderboardId = $this->getLeaderboardId($leaderboardName);
 
         if ($leaderboardId) {
-            $this->topEntries = $service->getLeaderboardEntries($leaderboardId, 10);
-        } else {
-            $this->topEntries = [];
+            $entries = $service->getLeaderboardEntries($leaderboardId, 10);
+            if (!empty($entries)) {
+                $this->topEntries = $entries;
+            }
         }
 
         $this->modalLoading = false;
@@ -122,9 +123,10 @@ class SteamLeaderboard extends Component
         $leaderboardId = $this->getLeaderboardId($leaderboardName);
 
         if ($leaderboardId && Auth::check() && Auth::user()->steam_id) {
-            $this->aroundMeEntries = $service->getLeaderboardEntriesAroundUser($leaderboardId, Auth::user()->steam_id, 10);
-        } else {
-            $this->aroundMeEntries = [];
+            $entries = $service->getLeaderboardEntriesAroundUser($leaderboardId, Auth::user()->steam_id, 10);
+            if (!empty($entries)) {
+                $this->aroundMeEntries = $entries;
+            }
         }
 
         $this->modalLoading = false;
@@ -141,8 +143,21 @@ class SteamLeaderboard extends Component
         // Open modal immediately
         $this->showModal = true;
         
-        // Load data synchronously for now
-        $this->loadTop10DataAsync($leaderboardName);
+        // Check cache first
+        $leaderboardId = $this->getLeaderboardId($leaderboardName);
+        if ($leaderboardId) {
+            $cacheKey = "steam_leaderboard_entries_{$leaderboardId}_10";
+            $cachedEntries = Cache::get($cacheKey);
+            
+            if ($cachedEntries) {
+                // Use cached data immediately
+                $this->topEntries = $cachedEntries;
+                $this->modalLoading = false;
+            } else {
+                // Load data asynchronously
+                $this->dispatch('loadTop10DataAsync', $leaderboardName);
+            }
+        }
     }
 
     public function viewAroundMe($leaderboardName)
@@ -156,8 +171,21 @@ class SteamLeaderboard extends Component
         // Open modal immediately
         $this->showModal = true;
         
-        // Load data synchronously for now
-        $this->loadAroundMeDataAsync($leaderboardName);
+        // Check cache first
+        $leaderboardId = $this->getLeaderboardId($leaderboardName);
+        if ($leaderboardId && Auth::check() && Auth::user()->steam_id) {
+            $cacheKey = "steam_leaderboard_around_{$leaderboardId}_" . Auth::user()->steam_id . "_10";
+            $cachedEntries = Cache::get($cacheKey);
+            
+            if ($cachedEntries) {
+                // Use cached data immediately
+                $this->aroundMeEntries = $cachedEntries;
+                $this->modalLoading = false;
+            } else {
+                // Load data asynchronously
+                $this->dispatch('loadAroundMeDataAsync', $leaderboardName);
+            }
+        }
     }
 
     public function closeModal()
