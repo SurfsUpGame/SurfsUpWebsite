@@ -10,15 +10,21 @@
         </div>
     @else
         @auth
-            <!-- Filter Toggle -->
-            <div class="mb-4 flex items-center gap-3">
-                <label class="flex items-center gap-2 text-gray-300 cursor-pointer">
-                    <input type="checkbox" wire:model.live="showOnlyWithScores" class="rounded bg-gray-700 border-gray-600 text-green-600 focus:ring-green-500 focus:ring-offset-gray-800">
-                    <span class="text-sm">Show only maps with scores</span>
-                </label>
-                <span class="text-xs text-gray-400">
-                    ({{ count($this->getFilteredRankings()) }} of {{ count($rankings) }} maps)
-                </span>
+            <!-- Filter Toggle and Share Button -->
+            <div class="mb-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <label class="flex items-center gap-2 text-gray-300 cursor-pointer">
+                        <input type="checkbox" wire:model.live="showOnlyWithScores" class="rounded bg-gray-700 border-gray-600 text-green-600 focus:ring-green-500 focus:ring-offset-gray-800">
+                        <span class="text-sm">Show only maps with scores</span>
+                    </label>
+                    <span class="text-xs text-gray-400">
+                        ({{ count($this->getFilteredRankings()) }} of {{ count($rankings) }} maps)
+                    </span>
+                </div>
+                <button wire:click="showShareUrl" class="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm transition">
+                    <i class="fas fa-share"></i>
+                    Share Leaderboard
+                </button>
             </div>
 
             @if(count($this->getFilteredRankings()) > 0)
@@ -210,4 +216,83 @@
             </div>
         </div>
     @endif
+
+    <!-- Share URL Modal -->
+    @if($showShareUrl)
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-gray-800 rounded-lg p-6 max-w-lg w-full mx-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h4 class="text-xl font-semibold text-white flex items-center gap-2">
+                        <i class="fas fa-share text-purple-400"></i>
+                        Share Your Leaderboard
+                    </h4>
+                    <button wire:click="closeShareUrl" class="text-gray-400 hover:text-white text-2xl">
+                        ×
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <p class="text-gray-300 text-sm">
+                        Share this URL with others to show off your leaderboard rankings:
+                    </p>
+                    
+                    <div class="flex items-center gap-2">
+                        <input type="text" 
+                               value="{{ $shareUrl }}" 
+                               readonly 
+                               class="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                               id="shareUrlInput">
+                        <button onclick="copyToClipboard()" 
+                                class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm transition flex items-center gap-2">
+                            <i class="fas fa-copy"></i>
+                            Copy
+                        </button>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <a href="https://twitter.com/intent/tweet?text=Check%20out%20my%20SurfsUp%20leaderboard%20rankings!&url={{ urlencode($shareUrl) }}" 
+                           target="_blank" 
+                           class="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded text-sm transition">
+                            <i class="fab fa-twitter"></i>
+                            Twitter
+                        </a>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode($shareUrl) }}" 
+                           target="_blank" 
+                           class="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 text-white px-3 py-2 rounded text-sm transition">
+                            <i class="fab fa-facebook"></i>
+                            Facebook
+                        </a>
+                        <a href="https://discord.com/channels/@me" 
+                           target="_blank" 
+                           class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded text-sm transition"
+                           onclick="copyToClipboard(); this.innerHTML='<i class=&quot;fab fa-discord&quot;></i> Copied!'">
+                            <i class="fab fa-discord"></i>
+                            Discord
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>
+
+<script>
+function copyToClipboard() {
+    const input = document.getElementById('shareUrlInput');
+    input.select();
+    input.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(input.value).then(function() {
+        // Optional: Show a toast notification
+        const button = document.querySelector('button[onclick="copyToClipboard()"]');
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        button.classList.add('bg-green-600');
+        button.classList.remove('bg-purple-600');
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.classList.remove('bg-green-600');
+            button.classList.add('bg-purple-600');
+        }, 2000);
+    });
+}
+</script>

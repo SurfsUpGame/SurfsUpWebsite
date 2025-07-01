@@ -19,6 +19,8 @@ class SteamLeaderboard extends Component
     public $showOnlyWithScores = true;
     public $sortBy = 'rank';
     public $sortDirection = 'asc';
+    public $showShareUrl = false;
+    public $shareUrl = '';
 
     protected $leaderboardService;
 
@@ -183,6 +185,21 @@ class SteamLeaderboard extends Component
             $this->sortBy = $field;
             $this->sortDirection = 'asc';
         }
+    }
+
+    public function showShareUrl()
+    {
+        if (Auth::check() && Auth::user()->steam_id) {
+            $steamId = Auth::user()->steam_id;
+            $this->shareUrl = url('/leaderboard/' . $steamId);
+            $this->showShareUrl = true;
+        }
+    }
+
+    public function closeShareUrl()
+    {
+        $this->showShareUrl = false;
+        $this->shareUrl = '';
     }
 
     public function getFilteredRankings()
