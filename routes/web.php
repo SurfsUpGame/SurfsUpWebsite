@@ -5,7 +5,7 @@ use App\Http\Controllers\Auth\SteamAuthController;
 use App\Http\Controllers\LeaderboardController;
 
 if (env('APP_ENV') === 'production') {
-    URL::forceSchema('https');
+    URL::forceHttps(true);
 }
 
 Route::get('/', function () {
