@@ -84,6 +84,9 @@
                         <a href="https://trello.com/b/6w7tMciD/surfsup-roadmap" target="_blank" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition">
                             <i class="fas fa-map mr-2"></i> View Roadmap
                         </a>
+                        <a href="/leaderboard/{{ auth()->user()->steam_id }}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition">
+                            <i class="fas fa-trophy mr-2"></i> View My Leaderboard
+                        </a>
                         <hr class="my-2 border-gray-700">
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf

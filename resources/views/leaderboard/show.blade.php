@@ -36,9 +36,11 @@
             <a href="https://store.steampowered.com/app/3454830/SurfsUp/" target="_blank" class="flex items-center gap-2 hover:underline transition">
                 <i class="fa-brands fa-steam"></i> Steam
             </a>
-            <a href="/auth/steam" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-white transition">
-                View Your Rankings
-            </a>
+            @guest
+                <a href="/auth/steam" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg text-white transition">
+                    View Your Rankings
+                </a>
+            @endguest
         </div>
     </header>
 
