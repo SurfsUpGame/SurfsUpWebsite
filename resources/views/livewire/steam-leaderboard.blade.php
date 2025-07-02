@@ -21,89 +21,75 @@
                         ({{ count($this->getFilteredRankings()) }} of {{ count($rankings) }} maps)
                     </span>
                 </div>
-                <button wire:click="showShareUrl" class="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm transition">
-                    <i class="fas fa-share"></i>
-                    Share Leaderboard
-                </button>
+                @if(Auth::check() && Auth::user()->steam_id)
+                    <a href="/leaderboard/{{ Auth::user()->steam_id }}" class="flex items-center gap-2 bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg text-sm transition">
+                        <i class="fas fa-clock"></i>
+                        View Your Times
+                    </a>
+                @endif
             </div>
 
             @if(count($rankings) > 0)
                 @if(count($this->getFilteredRankings()) > 0)
-                    <div class="overflow-x-auto mb-6">
-                        <table class="w-full text-left bg-gray-700 rounded-lg">
-                            <thead>
-                                <tr class="text-gray-300 bg-gray-600">
-                                    <th class="p-3 text-left">Leaderboard</th>
-                                    <th class="p-3 text-center">World Record Holder</th>
-                                    <th class="p-3 text-center">World Record Time</th>
-                                    <th class="p-3 text-center">Total Players</th>
-                                    <th class="p-3 text-center">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($this->getFilteredRankings() as $ranking)
-                                    <tr class="border-b border-gray-600 hover:bg-gray-600 transition relative overflow-hidden"
-                                        style="background-image: linear-gradient(rgba(55, 65, 81, 0.85), rgba(55, 65, 81, 0.95)), url('{{ $this->getLevelImage($ranking['name']) }}'); background-size: cover; background-position: center;">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                        @foreach($this->getFilteredRankings() as $ranking)
+                            <div class="bg-gray-700 rounded-md overflow-hidden hover:bg-gray-600 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl relative"
+                                 style="background-image: linear-gradient(rgba(55, 65, 81, 0.9), rgba(55, 65, 81, 0.95)), url('{{ $this->getLevelImage($ranking['name']) }}'); background-size: cover; background-position: center;">
 
-                                        <td class="p-3 relative z-10">
-                                            <div class="flex items-center gap-4">
-                                                <div class="flex-shrink-0">
-                                                    <img src="{{ $this->getLevelImage($ranking['name']) }}"
-                                                         alt="{{ $ranking['display_name'] }}"
-                                                         class="w-16 h-16 rounded-lg object-cover border-2 border-gray-400 cursor-pointer transition-transform hover:scale-105 shadow-lg"
-                                                         wire:click="showImageModal({{ json_encode($ranking['name']) }}, {{ json_encode($ranking['display_name']) }})"
-                                                         onerror="this.src='/img/levels/default.png'">
-                                                </div>
-                                                <div>
-                                                    <h4 class="text-white font-semibold text-lg drop-shadow-lg">{{ $ranking['display_name'] }}</h4>
-                                                    <p class="text-gray-300 text-sm drop-shadow-lg">{{ ucfirst(str_replace('_', ' ', $ranking['name'])) }}</p>
-                                                </div>
+                                <div class="relative z-10 p-6">
+                                    <div class="flex items-center gap-4 mb-4">
+                                        <div class="flex-shrink-0">
+                                            <img src="{{ $this->getLevelImage($ranking['name']) }}"
+                                                 alt="{{ $ranking['display_name'] }}"
+                                                 class="w-16 h-16 rounded-lg object-cover border-2 border-gray-400 cursor-pointer transition-transform hover:scale-105 shadow-lg"
+                                                 wire:click="showImageModal({{ json_encode($ranking['name']) }}, {{ json_encode($ranking['display_name']) }})"
+                                                 onerror="this.src='/img/levels/default.png'">
+                                        </div>
+                                        <div class="flex-1">
+                                            <h2 class="text-white font-semibold text-3xl drop-shadow-lg">{{ $ranking['display_name'] }}</h2>
+{{--                                            <p class="text-gray-300 text-sm drop-shadow-lg">{{ ucfirst(str_replace('_', ' ', $ranking['name'])) }}</p>--}}
+                                        </div>
+                                    </div>
+
+                                    @if(isset($ranking['world_record']))
+                                        <div class="mb-4 text-center">
+                                            <div class="flex items-center justify-center gap-2 mb-2">
+                                                <i class="fas fa-crown text-yellow-400 text-xl"></i>
+                                                <a href="/leaderboard/{{ $ranking['world_record']['steam_id'] }}"
+                                                   class="text-white font-semibold text-lg drop-shadow-lg hover:text-yellow-300 transition-colors duration-200">
+                                                    {{ $ranking['world_record']['persona_name'] }}
+                                                </a>
                                             </div>
-                                        </td>
-                                        @if(isset($ranking['world_record']))
-                                            <td class="p-3 text-center relative z-10">
-                                                <div class="flex items-center justify-center gap-2">
-                                                    <i class="fas fa-crown text-yellow-400"></i>
-                                                    <span class="text-white font-semibold drop-shadow-lg">{{ $ranking['world_record']['persona_name'] }}</span>
-                                                </div>
-                                            </td>
-                                            <td class="p-3 text-center relative z-10">
-                                                <span class="text-lg font-bold text-yellow-400 drop-shadow-lg">{{ number_format($ranking['world_record']['score'] / 1000, 3) }}s</span>
-                                            </td>
-                                            <td class="p-3 text-center text-white relative z-10">
-                                                <span class="drop-shadow-lg">{{ number_format($ranking['entry_count']) }}</span>
-                                            </td>
-                                        @elseif(isset($worldRecordsLoading[$ranking['id']]) && $worldRecordsLoading[$ranking['id']])
-                                            <td class="p-3 text-center relative z-10">
-                                                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500 mx-auto"></div>
-                                            </td>
-                                            <td class="p-3 text-center relative z-10">
-                                                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500 mx-auto"></div>
-                                            </td>
-                                            <td class="p-3 text-center relative z-10">
-                                                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500 mx-auto"></div>
-                                            </td>
-                                        @else
-                                            <td class="p-3 text-center text-gray-400 relative z-10">-</td>
-                                            <td class="p-3 text-center text-gray-400 relative z-10">-</td>
-                                            <td class="p-3 text-center text-gray-400 relative z-10">-</td>
-                                        @endif
-                                        <td class="p-3 text-center relative z-10">
-                                            <div class="flex gap-2 justify-center">
-                                                <button wire:click="viewTop10('{{ $ranking['name'] }}')"
-                                                        class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition">
-                                                    Top 10
-                                                </button>
-                                                <button wire:click="viewAroundMe('{{ $ranking['name'] }}')"
-                                                        class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition">
-                                                    Around Me
-                                                </button>
+                                            <div class="text-2xl font-bold text-yellow-400 drop-shadow-lg mb-1">
+                                                {{ number_format($ranking['world_record']['score'] / 1000, 3) }}
                                             </div>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                        </div>
+                                    @elseif(isset($worldRecordsLoading[$ranking['id']]) && $worldRecordsLoading[$ranking['id']])
+                                        <div class="mb-4 text-center">
+                                            <div class="flex items-center justify-center gap-2 mb-2">
+                                                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500"></div>
+                                                <span class="text-gray-400">Loading...</span>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="mb-4 text-center">
+                                            <div class="text-gray-400 text-sm">No world record available</div>
+                                        </div>
+                                    @endif
+
+                                    <div class="flex gap-2 justify-center">
+                                        <button wire:click="viewTop10('{{ $ranking['name'] }}')"
+                                                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition flex-1">
+                                            Top 10
+                                        </button>
+                                        <button wire:click="viewAroundMe('{{ $ranking['name'] }}')"
+                                                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition flex-1">
+                                            Around You
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
                 @else
                     <div class="text-center py-8">
@@ -118,7 +104,7 @@
                 </div>
             @endif
         @endauth
-        
+
         @guest
             @if(count($rankings) > 0)
                 <div class="mb-4 flex items-center justify-between">
@@ -136,77 +122,67 @@
                         Login for Your Rankings
                     </a>
                 </div>
-                
-                @if(count($this->getFilteredRankings()) > 0)
-                    <div class="overflow-x-auto mb-6">
-                        <table class="w-full text-left bg-gray-700 rounded-lg">
-                            <thead>
-                                <tr class="text-gray-300 bg-gray-600">
-                                    <th class="p-3 text-left">Leaderboard</th>
-                                    <th class="p-3 text-center">World Record Holder</th>
-                                    <th class="p-3 text-center">World Record Time</th>
-                                    <th class="p-3 text-center">Total Players</th>
-                                    <th class="p-3 text-center">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($this->getFilteredRankings() as $ranking)
-                                    <tr class="border-b border-gray-600 hover:bg-gray-600 transition relative overflow-hidden"
-                                        style="background-image: linear-gradient(rgba(55, 65, 81, 0.85), rgba(55, 65, 81, 0.95)), url('{{ $this->getLevelImage($ranking['name']) }}'); background-size: cover; background-position: center;">
 
-                                        <td class="p-3 relative z-10">
-                                            <div class="flex items-center gap-4">
-                                                <div class="flex-shrink-0">
-                                                    <img src="{{ $this->getLevelImage($ranking['name']) }}"
-                                                         alt="{{ $ranking['display_name'] }}"
-                                                         class="w-16 h-16 rounded-lg object-cover border-2 border-gray-400 cursor-pointer transition-transform hover:scale-105 shadow-lg"
-                                                         wire:click="showImageModal({{ json_encode($ranking['name']) }}, {{ json_encode($ranking['display_name']) }})"
-                                                         onerror="this.src='/img/levels/default.png'">
-                                                </div>
-                                                <div>
-                                                    <h4 class="text-white font-semibold text-lg drop-shadow-lg">{{ $ranking['display_name'] }}</h4>
-                                                    <p class="text-gray-300 text-sm drop-shadow-lg">{{ ucfirst(str_replace('_', ' ', $ranking['name'])) }}</p>
-                                                </div>
+                @if(count($this->getFilteredRankings()) > 0)
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                        @foreach($this->getFilteredRankings() as $ranking)
+                            <div class="bg-gray-700 rounded-lg overflow-hidden hover:bg-gray-600 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl relative"
+                                 style="background-image: linear-gradient(rgba(55, 65, 81, 0.9), rgba(55, 65, 81, 0.95)), url('{{ $this->getLevelImage($ranking['name']) }}'); background-size: cover; background-position: center;">
+
+                                <div class="relative z-10 p-6">
+                                    <div class="flex items-center gap-4 mb-4">
+                                        <div class="flex-shrink-0">
+                                            <img src="{{ $this->getLevelImage($ranking['name']) }}"
+                                                 alt="{{ $ranking['display_name'] }}"
+                                                 class="w-16 h-16 rounded-lg object-cover border-2 border-gray-400 cursor-pointer transition-transform hover:scale-105 shadow-lg"
+                                                 wire:click="showImageModal({{ json_encode($ranking['name']) }}, {{ json_encode($ranking['display_name']) }})"
+                                                 onerror="this.src='/img/levels/default.png'">
+                                        </div>
+                                        <div class="flex-1">
+                                            <h4 class="text-white font-semibold text-lg drop-shadow-lg">{{ $ranking['display_name'] }}</h4>
+                                            <p class="text-gray-300 text-sm drop-shadow-lg">{{ ucfirst(str_replace('_', ' ', $ranking['name'])) }}</p>
+                                        </div>
+                                    </div>
+
+                                    @if(isset($ranking['world_record']))
+                                        <div class="mb-4 text-center">
+                                            <div class="flex items-center justify-center gap-2 mb-2">
+                                                <i class="fas fa-crown text-yellow-400 text-xl"></i>
+                                                <a href="/leaderboard/{{ $ranking['world_record']['steam_id'] }}"
+                                                   class="text-white font-semibold text-lg drop-shadow-lg hover:text-yellow-300 transition-colors duration-200">
+                                                    {{ $ranking['world_record']['persona_name'] }}
+                                                </a>
                                             </div>
-                                        </td>
-                                        @if(isset($ranking['world_record']))
-                                            <td class="p-3 text-center relative z-10">
-                                                <div class="flex items-center justify-center gap-2">
-                                                    <i class="fas fa-crown text-yellow-400"></i>
-                                                    <span class="text-white font-semibold drop-shadow-lg">{{ $ranking['world_record']['persona_name'] }}</span>
-                                                </div>
-                                            </td>
-                                            <td class="p-3 text-center relative z-10">
-                                                <span class="text-lg font-bold text-yellow-400 drop-shadow-lg">{{ number_format($ranking['world_record']['score'] / 1000, 3) }}s</span>
-                                            </td>
-                                            <td class="p-3 text-center text-white relative z-10">
-                                                <span class="drop-shadow-lg">{{ number_format($ranking['entry_count']) }}</span>
-                                            </td>
-                                        @elseif(isset($worldRecordsLoading[$ranking['id']]) && $worldRecordsLoading[$ranking['id']])
-                                            <td class="p-3 text-center relative z-10">
-                                                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500 mx-auto"></div>
-                                            </td>
-                                            <td class="p-3 text-center relative z-10">
-                                                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500 mx-auto"></div>
-                                            </td>
-                                            <td class="p-3 text-center relative z-10">
-                                                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500 mx-auto"></div>
-                                            </td>
-                                        @else
-                                            <td class="p-3 text-center text-gray-400 relative z-10">-</td>
-                                            <td class="p-3 text-center text-gray-400 relative z-10">-</td>
-                                            <td class="p-3 text-center text-gray-400 relative z-10">-</td>
-                                        @endif
-                                        <td class="p-3 text-center relative z-10">
+                                            <div class="text-2xl font-bold text-yellow-400 drop-shadow-lg mb-1">
+                                                {{ number_format($ranking['world_record']['score'] / 1000, 3) }}s
+                                            </div>
                                             <button wire:click="viewTop10('{{ $ranking['name'] }}')"
-                                                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition">
-                                                View Top 10
+                                                    class="text-blue-400 hover:text-blue-300 text-sm underline transition">
+                                                View {{ number_format($ranking['entry_count']) }} times
                                             </button>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                        </div>
+                                    @elseif(isset($worldRecordsLoading[$ranking['id']]) && $worldRecordsLoading[$ranking['id']])
+                                        <div class="mb-4 text-center">
+                                            <div class="flex items-center justify-center gap-2 mb-2">
+                                                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500"></div>
+                                                <span class="text-gray-400">Loading...</span>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="mb-4 text-center">
+                                            <div class="text-gray-400 text-sm">No world record available</div>
+                                        </div>
+                                    @endif
+
+                                    <div class="flex justify-center">
+                                        <button wire:click="viewTop10('{{ $ranking['name'] }}')"
+                                                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition w-full">
+                                            View Top 10
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
                 @else
                     <div class="text-center py-8">

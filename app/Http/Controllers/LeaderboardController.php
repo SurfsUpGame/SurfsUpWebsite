@@ -15,56 +15,70 @@ class LeaderboardController extends Controller
         $user = User::where('steam_id', $steamId)->first();
 
         if (!$user) {
-            // If user doesn't exist in our database, we'll still show the leaderboard
-            // but create a temporary user object with just the Steam ID
-            $user = new User(['steam_id' => $steamId]);
+            // If user doesn't exist in our database, fetch their Steam profile
+            $steamProfile = $this->fetchSteamProfile($steamId);
+            
+            // Create a temporary user object with Steam profile data
+            $user = new User([
+                'steam_id' => $steamId,
+                'name' => $steamProfile['name'] ?? 'Player',
+                'avatar' => $steamProfile['avatar'] ?? null
+            ]);
         }
-
-        // Try to get cached complete rankings first
-        $completeRankingsCacheKey = "steam_user_complete_rankings_{$steamId}";
-        $rankings = Cache::get($completeRankingsCacheKey);
-
-        if (!$rankings) {
-            // Fallback to manual fetching if no cache
-            $leaderboardService = new SteamLeaderboardService();
-            $leaderboards = $leaderboardService->getLeaderboards();
-            $rankings = [];
-
-            // For each leaderboard, get the user's rank
-            foreach ($leaderboards as $leaderboard) {
-                if (isset($leaderboard['id'])) {
-                    $rankData = $leaderboardService->getUserRank($steamId, $leaderboard['id']);
-
-                    if ($rankData) {
-                        $leaderboard['rank_data'] = $rankData;
-                    }
-
-                    $rankings[] = $leaderboard;
-                }
-            }
-        }
-
-        // Filter to only show maps with scores
-        $rankings = array_filter($rankings, function($ranking) {
-            return isset($ranking['rank_data']);
-        });
-
-        // Sort by rank (lowest rank number first)
-        usort($rankings, function($a, $b) {
-            $aRank = $a['rank_data']['rank'] ?? PHP_INT_MAX;
-            $bRank = $b['rank_data']['rank'] ?? PHP_INT_MAX;
-            return $aRank <=> $bRank;
-        });
-
-
-        $service = new SteamLeaderboardService();
-        $total_maps = $service->getLeaderboards();
 
         return view('leaderboard.show', [
             'user' => $user,
-            'rankings' => $rankings,
-            'total_maps' => count($total_maps),
             'steamId' => $steamId
         ]);
+    }
+
+    private function fetchSteamProfile($steamId)
+    {
+        // Check cache first
+        $cacheKey = "steam_profile_{$steamId}";
+        $cachedProfile = Cache::get($cacheKey);
+        
+        if ($cachedProfile !== null) {
+            return $cachedProfile;
+        }
+
+        $apiKey = config('steam-auth.api_keys')[0] ?? null;
+        
+        if (!$apiKey) {
+            $fallback = ['name' => 'Player', 'avatar' => null];
+            Cache::put($cacheKey, $fallback, 3600); // Cache for 1 hour
+            return $fallback;
+        }
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(5)->get('https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/', [
+                'key' => $apiKey,
+                'steamids' => $steamId,
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                if (isset($data['response']['players'][0])) {
+                    $player = $data['response']['players'][0];
+                    $profile = [
+                        'name' => $player['personaname'] ?? 'Player',
+                        'avatar' => $player['avatarfull'] ?? $player['avatarmedium'] ?? $player['avatar'] ?? null
+                    ];
+                    
+                    // Cache the profile for 1 hour
+                    Cache::put($cacheKey, $profile, 3600);
+                    return $profile;
+                }
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('Failed to fetch Steam profile', [
+                'steam_id' => $steamId,
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        $fallback = ['name' => 'Player', 'avatar' => null];
+        Cache::put($cacheKey, $fallback, 3600); // Cache even failures to avoid repeated API calls
+        return $fallback;
     }
 }
