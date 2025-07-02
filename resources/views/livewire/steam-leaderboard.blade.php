@@ -1,7 +1,7 @@
 <div class="bg-gray-800 rounded-lg p-6">
     <h3 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
         <i class="fa-solid fa-trophy text-yellow-500"></i>
-        SurfsUp Leaderboard Rankings
+        SurfsUp World Records
     </h3>
 
     @if($loading)
@@ -15,7 +15,7 @@
                 <div class="flex items-center gap-3">
                     <label class="flex items-center gap-2 text-gray-300 cursor-pointer">
                         <input type="checkbox" wire:model.live="showOnlyWithScores" class="rounded bg-gray-700 border-gray-600 text-green-600 focus:ring-green-500 focus:ring-offset-gray-800">
-                        <span class="text-sm">Show only maps with scores</span>
+                        <span class="text-sm">Show only maps with world records</span>
                     </label>
                     <span class="text-xs text-gray-400">
                         ({{ count($this->getFilteredRankings()) }} of {{ count($rankings) }} maps)
@@ -34,10 +34,9 @@
                             <thead>
                                 <tr class="text-gray-300 bg-gray-600">
                                     <th class="p-3 text-left">Leaderboard</th>
-                                    <th class="p-3 text-center">Your Rank</th>
-                                    <th class="p-3 text-center">Rank Group</th>
-                                    <th class="p-3 text-center">Your Score</th>
-                                    <th class="p-3 text-center">Percentile</th>
+                                    <th class="p-3 text-center">World Record Holder</th>
+                                    <th class="p-3 text-center">World Record Time</th>
+                                    <th class="p-3 text-center">Total Players</th>
                                     <th class="p-3 text-center">Action</th>
                                 </tr>
                             </thead>
@@ -61,28 +60,20 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        @if(isset($ranking['rank_data']['percentile']))
-                                            @php
-                                                $rankGroup = $this->getRankGroup($ranking['rank_data']['percentile']);
-                                            @endphp
+                                        @if(isset($ranking['world_record']))
                                             <td class="p-3 text-center relative z-10">
-                                                <span class="text-lg font-bold text-green-400 drop-shadow-lg">#{{ number_format($ranking['rank_data']['rank']) }}</span>
+                                                <div class="flex items-center justify-center gap-2">
+                                                    <i class="fas fa-crown text-yellow-400"></i>
+                                                    <span class="text-white font-semibold drop-shadow-lg">{{ $ranking['world_record']['persona_name'] }}</span>
+                                                </div>
                                             </td>
                                             <td class="p-3 text-center relative z-10">
-                                                <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold {{ $rankGroup['color'] }} {{ $rankGroup['bg'] }} border {{ $rankGroup['border'] }} drop-shadow-lg">
-                                                    {{ $rankGroup['name'] }}
-                                                </span>
+                                                <span class="text-lg font-bold text-yellow-400 drop-shadow-lg">{{ number_format($ranking['world_record']['score'] / 1000, 3) }}s</span>
                                             </td>
                                             <td class="p-3 text-center text-white relative z-10">
-                                                <span class="drop-shadow-lg">{{ number_format($ranking['rank_data']['score'] / 1000, 3) }}</span>
+                                                <span class="drop-shadow-lg">{{ number_format($ranking['entry_count']) }}</span>
                                             </td>
-                                            <td class="p-3 text-center text-white relative z-10">
-                                                <span class="drop-shadow-lg">Top {{ number_format($ranking['rank_data']['percentile'], 1) }}%</span>
-                                            </td>
-                                        @elseif(isset($userScoresLoading[$ranking['id']]) && $userScoresLoading[$ranking['id']])
-                                            <td class="p-3 text-center relative z-10">
-                                                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500 mx-auto"></div>
-                                            </td>
+                                        @elseif(isset($worldRecordsLoading[$ranking['id']]) && $worldRecordsLoading[$ranking['id']])
                                             <td class="p-3 text-center relative z-10">
                                                 <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500 mx-auto"></div>
                                             </td>
@@ -93,7 +84,6 @@
                                                 <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500 mx-auto"></div>
                                             </td>
                                         @else
-                                            <td class="p-3 text-center text-gray-400 relative z-10">-</td>
                                             <td class="p-3 text-center text-gray-400 relative z-10">-</td>
                                             <td class="p-3 text-center text-gray-400 relative z-10">-</td>
                                             <td class="p-3 text-center text-gray-400 relative z-10">-</td>
@@ -117,8 +107,8 @@
                     </div>
                 @else
                     <div class="text-center py-8">
-                        <p class="text-gray-400 mb-2">No maps with scores found</p>
-                        <p class="text-gray-500 text-sm">Turn off "Show only maps with scores" to see all available leaderboards</p>
+                        <p class="text-gray-400 mb-2">No maps with world records found</p>
+                        <p class="text-gray-500 text-sm">Turn off "Show only maps with world records" to see all available leaderboards</p>
                     </div>
                 @endif
             @else
@@ -127,14 +117,110 @@
                     <p class="text-gray-500 text-sm">This could be due to Steam API configuration issues or no leaderboards being set up for this game.</p>
                 </div>
             @endif
-        @else
-            <div class="text-center py-8">
-                <p class="text-gray-400 mb-4">Login with Steam to see your leaderboard rankings</p>
-                <a href="{{ route('auth.steam') }}" class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 px-6 py-3 rounded-lg text-white transition">
-                    <i class="fa-brands fa-steam"></i> Login with Steam
-                </a>
-            </div>
         @endauth
+        
+        @guest
+            @if(count($rankings) > 0)
+                <div class="mb-4 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <label class="flex items-center gap-2 text-gray-300 cursor-pointer">
+                            <input type="checkbox" wire:model.live="showOnlyWithScores" class="rounded bg-gray-700 border-gray-600 text-green-600 focus:ring-green-500 focus:ring-offset-gray-800">
+                            <span class="text-sm">Show only maps with world records</span>
+                        </label>
+                        <span class="text-xs text-gray-400">
+                            ({{ count($this->getFilteredRankings()) }} of {{ count($rankings) }} maps)
+                        </span>
+                    </div>
+                    <a href="{{ route('auth.steam') }}" class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition">
+                        <i class="fa-brands fa-steam"></i>
+                        Login for Your Rankings
+                    </a>
+                </div>
+                
+                @if(count($this->getFilteredRankings()) > 0)
+                    <div class="overflow-x-auto mb-6">
+                        <table class="w-full text-left bg-gray-700 rounded-lg">
+                            <thead>
+                                <tr class="text-gray-300 bg-gray-600">
+                                    <th class="p-3 text-left">Leaderboard</th>
+                                    <th class="p-3 text-center">World Record Holder</th>
+                                    <th class="p-3 text-center">World Record Time</th>
+                                    <th class="p-3 text-center">Total Players</th>
+                                    <th class="p-3 text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($this->getFilteredRankings() as $ranking)
+                                    <tr class="border-b border-gray-600 hover:bg-gray-600 transition relative overflow-hidden"
+                                        style="background-image: linear-gradient(rgba(55, 65, 81, 0.85), rgba(55, 65, 81, 0.95)), url('{{ $this->getLevelImage($ranking['name']) }}'); background-size: cover; background-position: center;">
+
+                                        <td class="p-3 relative z-10">
+                                            <div class="flex items-center gap-4">
+                                                <div class="flex-shrink-0">
+                                                    <img src="{{ $this->getLevelImage($ranking['name']) }}"
+                                                         alt="{{ $ranking['display_name'] }}"
+                                                         class="w-16 h-16 rounded-lg object-cover border-2 border-gray-400 cursor-pointer transition-transform hover:scale-105 shadow-lg"
+                                                         wire:click="showImageModal({{ json_encode($ranking['name']) }}, {{ json_encode($ranking['display_name']) }})"
+                                                         onerror="this.src='/img/levels/default.png'">
+                                                </div>
+                                                <div>
+                                                    <h4 class="text-white font-semibold text-lg drop-shadow-lg">{{ $ranking['display_name'] }}</h4>
+                                                    <p class="text-gray-300 text-sm drop-shadow-lg">{{ ucfirst(str_replace('_', ' ', $ranking['name'])) }}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        @if(isset($ranking['world_record']))
+                                            <td class="p-3 text-center relative z-10">
+                                                <div class="flex items-center justify-center gap-2">
+                                                    <i class="fas fa-crown text-yellow-400"></i>
+                                                    <span class="text-white font-semibold drop-shadow-lg">{{ $ranking['world_record']['persona_name'] }}</span>
+                                                </div>
+                                            </td>
+                                            <td class="p-3 text-center relative z-10">
+                                                <span class="text-lg font-bold text-yellow-400 drop-shadow-lg">{{ number_format($ranking['world_record']['score'] / 1000, 3) }}s</span>
+                                            </td>
+                                            <td class="p-3 text-center text-white relative z-10">
+                                                <span class="drop-shadow-lg">{{ number_format($ranking['entry_count']) }}</span>
+                                            </td>
+                                        @elseif(isset($worldRecordsLoading[$ranking['id']]) && $worldRecordsLoading[$ranking['id']])
+                                            <td class="p-3 text-center relative z-10">
+                                                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500 mx-auto"></div>
+                                            </td>
+                                            <td class="p-3 text-center relative z-10">
+                                                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500 mx-auto"></div>
+                                            </td>
+                                            <td class="p-3 text-center relative z-10">
+                                                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500 mx-auto"></div>
+                                            </td>
+                                        @else
+                                            <td class="p-3 text-center text-gray-400 relative z-10">-</td>
+                                            <td class="p-3 text-center text-gray-400 relative z-10">-</td>
+                                            <td class="p-3 text-center text-gray-400 relative z-10">-</td>
+                                        @endif
+                                        <td class="p-3 text-center relative z-10">
+                                            <button wire:click="viewTop10('{{ $ranking['name'] }}')"
+                                                    class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition">
+                                                View Top 10
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="text-center py-8">
+                        <p class="text-gray-400 mb-2">No maps with world records found</p>
+                        <p class="text-gray-500 text-sm">Turn off "Show only maps with world records" to see all available leaderboards</p>
+                    </div>
+                @endif
+            @else
+                <div class="text-center py-8">
+                    <p class="text-gray-400 mb-2">No leaderboard data available</p>
+                    <p class="text-gray-500 text-sm">This could be due to Steam API configuration issues or no leaderboards being set up for this game.</p>
+                </div>
+            @endif
+        @endguest
     @endif
 
     <!-- Leaderboard Modal -->
@@ -366,8 +452,15 @@ document.addEventListener('livewire:init', () => {
         }, 100);
     });
 
-    // Handle user score loading event
-    Livewire.on('showUserScoreLoading', () => {
+    // Handle async world record loading
+    Livewire.on('loadWorldRecordsAsync', () => {
+        setTimeout(() => {
+            Livewire.dispatch('loadWorldRecordsAsync');
+        }, 100);
+    });
+
+    // Handle world record loading event
+    Livewire.on('showWorldRecordLoading', () => {
         // Force a small delay to ensure the UI updates with loading spinners
         setTimeout(() => {
             // Trigger component refresh to show updated loading states

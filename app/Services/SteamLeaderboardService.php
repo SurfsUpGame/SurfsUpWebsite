@@ -35,8 +35,8 @@ class SteamLeaderboardService
             return $cachedLeaderboards;
         }
 
-        // If not in cache, fetch and cache the result
-        return Cache::remember($cacheKey, 7200, function () {
+        // If not in cache, fetch and cache the result (12 hours)
+        return Cache::remember($cacheKey, 43200, function () {
             if (!$this->publisherApiKey) {
                 Log::warning('No Steam Publisher API key configured for leaderboards');
                 return [];
@@ -312,6 +312,25 @@ class SteamLeaderboardService
             }
 
             return [];
+        });
+    }
+
+    /**
+     * Get world record (top 1 entry) for a leaderboard
+     */
+    public function getWorldRecord(string $leaderboardId): ?array
+    {
+        $cacheKey = "steam_leaderboard_world_record_{$leaderboardId}";
+        
+        // Cache for 1 hour
+        return Cache::remember($cacheKey, 3600, function () use ($leaderboardId) {
+            $entries = $this->getLeaderboardEntries($leaderboardId, 1);
+            
+            if (!empty($entries)) {
+                return $entries[0];
+            }
+            
+            return null;
         });
     }
 

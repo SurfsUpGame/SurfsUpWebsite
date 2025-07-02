@@ -12,7 +12,7 @@ class SteamLeaderboard extends Component
 {
     public $rankings = [];
     public $loading = true;
-    public $userScoresLoading = [];
+    public $worldRecordsLoading = [];
     public $selectedLeaderboard = null;
     public $selectedLeaderboardName = null;
     public $topEntries = [];
@@ -31,98 +31,141 @@ class SteamLeaderboard extends Component
 
     public function mount() : void
     {
-        $this->loadUserRankings();
+        $this->loadLeaderboardsOnly();
+        $this->dispatch('loadWorldRecordsAsync');
     }
 
-    public function loadUserRankings(): void
+    public function loadLeaderboardsOnly(): void
     {
-        $this->loading = true;
-        $this->userScoresLoading = [];
+        $service = new SteamLeaderboardService();
 
-        if (Auth::check() && Auth::user()->steam_id) {
-            $steamId = Auth::user()->steam_id;
-            $service = new SteamLeaderboardService();
+        // Check for cached complete world records first
+        $completeRecordsCacheKey = "steam_complete_world_records";
+        $cachedCompleteRecords = Cache::get($completeRecordsCacheKey);
 
-            // Check for cached complete rankings first
-            $completeRankingsCacheKey = "steam_user_complete_rankings_{$steamId}";
-            $cachedCompleteRankings = Cache::get($completeRankingsCacheKey);
-
-            if ($cachedCompleteRankings) {
-                // Use complete cached rankings
-                $this->rankings = $cachedCompleteRankings;
-                $this->userScoresLoading = array_fill_keys(array_column($this->rankings, 'id'), false);
-                $this->loading = false;
-                return;
-            }
-
-            // Get all leaderboards
-            $leaderboards = $service->getLeaderboards();
-            $this->rankings = [];
-
-            if (empty($leaderboards)) {
-                $this->loading = false;
-                return;
-            }
-
-            // Batch check cache for all leaderboard ranks
-            $cacheKeys = [];
-            $leaderboardMap = [];
-
-            foreach ($leaderboards as $index => $leaderboard) {
-                if (isset($leaderboard['id'])) {
-                    $cacheKey = "steam_leaderboard_rank_{$steamId}_{$leaderboard['id']}";
-                    $cacheKeys[] = $cacheKey;
-                    $leaderboardMap[$cacheKey] = ['leaderboard' => $leaderboard, 'index' => $index];
-                }
-            }
-
-            // Batch get from cache
-            $cachedRanks = Cache::many($cacheKeys);
-            $idsToLoad = [];
-
-            // Process results
-            foreach ($leaderboards as $index => $leaderboard) {
-                if (isset($leaderboard['id'])) {
-                    $cacheKey = "steam_leaderboard_rank_{$steamId}_{$leaderboard['id']}";
-
-                    if (isset($cachedRanks[$cacheKey]) && $cachedRanks[$cacheKey] !== null) {
-                        // Use cached data
-                        $leaderboard['rank_data'] = $cachedRanks[$cacheKey];
-                        $this->userScoresLoading[$leaderboard['id']] = false;
-                    } else {
-                        // Mark for loading
-                        $this->userScoresLoading[$leaderboard['id']] = true;
-                        $idsToLoad[] = ['id' => $leaderboard['id'], 'index' => count($this->rankings)];
-                    }
-
-                    $this->rankings[] = $leaderboard;
-                }
-            }
-
-            // Show the leaderboards immediately with loading states
+        if ($cachedCompleteRecords) {
+            // Use complete cached records
+            $this->rankings = $cachedCompleteRecords;
+            $this->worldRecordsLoading = array_fill_keys(array_column($this->rankings, 'id'), false);
             $this->loading = false;
-
-            // If there are scores to load, load them
-            if (!empty($idsToLoad)) {
-                $this->dispatch('showUserScoreLoading');
-                $this->batchLoadUserScores($idsToLoad);
-            } else {
-                // Cache complete rankings if all data is available
-                $this->cacheCompleteRankings($steamId);
-            }
-        } else {
-            $this->loading = false;
-        }
-    }
-
-    public function batchLoadUserScores($idsToLoad): void
-    {
-        if (!Auth::check() || !Auth::user()->steam_id) {
             return;
         }
 
+        // Get all leaderboards (cached for 12 hours) - this is fast
+        $leaderboards = $service->getLeaderboards();
+        $this->rankings = [];
+
+        if (empty($leaderboards)) {
+            $this->loading = false;
+            return;
+        }
+
+        // Just load the leaderboards without world records - mark all as loading
+        foreach ($leaderboards as $leaderboard) {
+            if (isset($leaderboard['id'])) {
+                $this->worldRecordsLoading[$leaderboard['id']] = true;
+                $this->rankings[] = $leaderboard;
+            }
+        }
+
+        $this->loading = false;
+    }
+
+    #[On('loadWorldRecordsAsync')]
+    public function loadWorldRecordsAsync(): void
+    {
+        // Only load world records that aren't already cached
+        $idsToLoad = [];
         $service = new SteamLeaderboardService();
-        $steamId = Auth::user()->steam_id;
+
+        foreach ($this->rankings as $index => $ranking) {
+            if (isset($ranking['id'])) {
+                // Check if world record is already cached
+                $cacheKey = "steam_leaderboard_world_record_{$ranking['id']}";
+                $cachedRecord = Cache::get($cacheKey);
+
+                if ($cachedRecord !== null) {
+                    $this->rankings[$index]['world_record'] = $cachedRecord;
+                    $this->worldRecordsLoading[$ranking['id']] = false;
+                } else {
+                    $idsToLoad[] = ['id' => $ranking['id'], 'index' => $index];
+                }
+            }
+        }
+
+        // Load world records asynchronously
+        if (!empty($idsToLoad)) {
+            $this->batchLoadWorldRecords($idsToLoad);
+        } else {
+            $this->cacheCompleteWorldRecords();
+        }
+    }
+
+    public function loadWorldRecords(): void
+    {
+        $this->loading = true;
+        $this->worldRecordsLoading = [];
+
+        $service = new SteamLeaderboardService();
+
+        // Check for cached complete world records first
+        $completeRecordsCacheKey = "steam_complete_world_records";
+        $cachedCompleteRecords = Cache::get($completeRecordsCacheKey);
+
+        if ($cachedCompleteRecords) {
+            // Use complete cached records
+            $this->rankings = $cachedCompleteRecords;
+            $this->worldRecordsLoading = array_fill_keys(array_column($this->rankings, 'id'), false);
+            $this->loading = false;
+            return;
+        }
+
+        // Get all leaderboards (cached for 12 hours)
+        $leaderboards = $service->getLeaderboards();
+        $this->rankings = [];
+
+        if (empty($leaderboards)) {
+            $this->loading = false;
+            return;
+        }
+
+        // Process each leaderboard
+        $idsToLoad = [];
+        foreach ($leaderboards as $index => $leaderboard) {
+            if (isset($leaderboard['id'])) {
+                // Check if world record is already cached
+                $cacheKey = "steam_leaderboard_world_record_{$leaderboard['id']}";
+                $cachedRecord = Cache::get($cacheKey);
+
+                if ($cachedRecord !== null) {
+                    $leaderboard['world_record'] = $cachedRecord;
+                    $this->worldRecordsLoading[$leaderboard['id']] = false;
+                } else {
+                    // Mark for loading
+                    $this->worldRecordsLoading[$leaderboard['id']] = true;
+                    $idsToLoad[] = ['id' => $leaderboard['id'], 'index' => count($this->rankings)];
+                }
+
+                $this->rankings[] = $leaderboard;
+            }
+        }
+
+        // Show the leaderboards immediately with loading states
+        $this->loading = false;
+
+        // If there are records to load, load them
+        if (!empty($idsToLoad)) {
+            $this->dispatch('showWorldRecordLoading');
+            $this->batchLoadWorldRecords($idsToLoad);
+        } else {
+            // Cache complete records if all data is available
+            $this->cacheCompleteWorldRecords();
+        }
+    }
+
+    public function batchLoadWorldRecords($idsToLoad): void
+    {
+        $service = new SteamLeaderboardService();
 
         // Process in small batches to avoid timeouts
         $chunks = array_chunk($idsToLoad, 5);
@@ -130,18 +173,18 @@ class SteamLeaderboard extends Component
 
         foreach ($chunks as $chunk) {
             foreach ($chunk as $item) {
-                $rankData = $service->getUserRank($steamId, $item['id']);
-                if ($rankData) {
-                    $this->rankings[$item['index']]['rank_data'] = $rankData;
+                $worldRecord = $service->getWorldRecord($item['id']);
+                if ($worldRecord) {
+                    $this->rankings[$item['index']]['world_record'] = $worldRecord;
                     $hasNewData = true;
                 }
-                $this->userScoresLoading[$item['id']] = false;
+                $this->worldRecordsLoading[$item['id']] = false;
             }
         }
 
-        // Cache complete rankings after loading new data
+        // Cache complete records after loading new data
         if ($hasNewData) {
-            $this->cacheCompleteRankings($steamId);
+            $this->cacheCompleteWorldRecords();
         }
     }
 
@@ -176,20 +219,20 @@ class SteamLeaderboard extends Component
         $this->modalLoading = false;
     }
 
-    private function cacheCompleteRankings($steamId): void
+    private function cacheCompleteWorldRecords(): void
     {
-        // Only cache if all rankings have rank_data
+        // Only cache if all rankings have world_record
         $allComplete = true;
         foreach ($this->rankings as $ranking) {
-            if (!isset($ranking['rank_data'])) {
+            if (!isset($ranking['world_record'])) {
                 $allComplete = false;
                 break;
             }
         }
 
         if ($allComplete) {
-            $cacheKey = "steam_user_complete_rankings_{$steamId}";
-            Cache::put($cacheKey, $this->rankings, 1800); // 30 minutes
+            $cacheKey = "steam_complete_world_records";
+            Cache::put($cacheKey, $this->rankings, 3600); // 1 hour to match world record cache
         }
     }
 
@@ -370,15 +413,13 @@ class SteamLeaderboard extends Component
 
         if ($this->showOnlyWithScores) {
             $rankings = array_filter($rankings, function($ranking) {
-                return isset($ranking['rank_data']['percentile']);
+                return isset($ranking['world_record']);
             });
         }
 
-        // Sort by rank (lowest rank number first)
+        // Sort by display name
         usort($rankings, function($a, $b) {
-            $aRank = $a['rank_data']['rank'] ?? PHP_INT_MAX;
-            $bRank = $b['rank_data']['rank'] ?? PHP_INT_MAX;
-            return $aRank <=> $bRank;
+            return strcmp($a['display_name'] ?? '', $b['display_name'] ?? '');
         });
 
         return $rankings;
