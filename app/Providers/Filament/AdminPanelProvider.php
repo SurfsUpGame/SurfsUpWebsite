@@ -39,12 +39,6 @@ class AdminPanelProvider extends PanelProvider
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
             ])
-            ->userMenuItems([
-                MenuItem::make()
-                    ->label('Back to Website')
-                    ->url('/')
-                    ->icon('heroicon-o-arrow-left'),
-            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

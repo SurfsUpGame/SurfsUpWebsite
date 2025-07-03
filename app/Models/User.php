@@ -72,6 +72,12 @@ class User extends Authenticatable implements FilamentUser
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->hasRole('admin');
+        try {
+            return $this->hasRole('admin');
+        } catch (\Exception $e) {
+            // Log the error and fallback to false
+            \Log::error('Error checking admin role: ' . $e->getMessage());
+            return false;
+        }
     }
 }
