@@ -28,7 +28,13 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 RUN git config --global --add safe.directory /var/www/html
 RUN composer install
 RUN npm install && npm run build
-# RUN php artisan migrate
+
+# Copy and set permissions for entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Set file ownership
 RUN chown -R www-data:www-data /var/www/html
+
+# Set entrypoint
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
