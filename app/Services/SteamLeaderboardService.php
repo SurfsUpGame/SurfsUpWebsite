@@ -202,17 +202,19 @@ class SteamLeaderboardService
                             }
                         }
 
-                        // Batch fetch all user names at once
-                        $userNames = $this->getSteamUserNamesBatch($steamIds);
+                        // Batch fetch all user profiles at once
+                        $userProfiles = $this->getSteamUserProfilesBatch($steamIds);
 
-                        // Build entries with fetched names
+                        // Build entries with fetched profiles
                         foreach ($data['leaderboardEntryInformation']['leaderboardEntries'] as $entry) {
                             $steamId = $entry['steamID'] ?? '';
+                            $profile = $userProfiles[$steamId] ?? null;
                             $entries[] = [
                                 'rank' => $entry['rank'] ?? 0,
                                 'steam_id' => $steamId,
                                 'score' => $entry['score'] ?? 0,
-                                'persona_name' => $userNames[$steamId] ?? 'Player ' . substr($steamId, -4),
+                                'persona_name' => $profile['name'] ?? 'Player ' . substr($steamId, -4),
+                                'avatar_url' => $profile['avatar'] ?? null,
                                 'details' => [
                                     'time' => '-',
                                 ],
@@ -277,17 +279,19 @@ class SteamLeaderboardService
                             }
                         }
 
-                        // Batch fetch all user names at once
-                        $userNames = $this->getSteamUserNamesBatch($steamIds);
+                        // Batch fetch all user profiles at once
+                        $userProfiles = $this->getSteamUserProfilesBatch($steamIds);
 
-                        // Build entries with fetched names
+                        // Build entries with fetched profiles
                         foreach ($data['leaderboardEntryInformation']['leaderboardEntries'] as $entry) {
                             $entryId = $entry['steamID'] ?? '';
+                            $profile = $userProfiles[$entryId] ?? null;
                             $entries[] = [
                                 'rank' => $entry['rank'] ?? 0,
                                 'steam_id' => $entryId,
                                 'score' => $entry['score'] ?? 0,
-                                'persona_name' => $userNames[$entryId] ?? 'Player ' . substr($entryId, -4),
+                                'persona_name' => $profile['name'] ?? 'Player ' . substr($entryId, -4),
+                                'avatar_url' => $profile['avatar'] ?? null,
                                 'is_current_user' => $entryId === $steamId,
                                 'details' => [
                                     'time' => '-',
@@ -335,7 +339,7 @@ class SteamLeaderboardService
     }
 
     /**
-     * Get Steam users' persona names from Steam IDs in batch
+     * Get Steam users' persona names and avatars from Steam IDs in batch
      */
     private function getSteamUserNamesBatch(array $steamIds): array
     {
@@ -350,10 +354,12 @@ class SteamLeaderboardService
         // Check cache for each ID first
         $uncachedIds = [];
         foreach ($steamIds as $steamId) {
-            $cacheKey = "steam_user_name_$steamId";
-            $cachedName = Cache::get($cacheKey);
-            if ($cachedName !== null) {
-                $results[$steamId] = $cachedName;
+            $cacheKey = "steam_user_profile_$steamId";
+            $cachedProfile = Cache::get($cacheKey);
+            if ($cachedProfile !== null) {
+                $results[$steamId] = $cachedProfile['name'];
+                // Also update user avatar in database if needed
+                $this->updateUserAvatar($steamId, $cachedProfile['avatar']);
             } else {
                 $uncachedIds[] = $steamId;
             }
@@ -380,17 +386,25 @@ class SteamLeaderboardService
                         foreach ($data['response']['players'] as $player) {
                             $steamId = $player['steamid'] ?? '';
                             $personaName = $player['personaname'] ?? 'Player ' . substr($steamId, -4);
+                            $avatar = $player['avatarfull'] ?? $player['avatarmedium'] ?? $player['avatar'] ?? null;
 
-                            // Cache individual name
-                            $cacheKey = "steam_user_name_$steamId";
-                            Cache::put($cacheKey, $personaName, 3600);
+                            // Cache individual profile data
+                            $cacheKey = "steam_user_profile_$steamId";
+                            $profileData = [
+                                'name' => $personaName,
+                                'avatar' => $avatar
+                            ];
+                            Cache::put($cacheKey, $profileData, 3600);
+
+                            // Update user avatar in database
+                            $this->updateUserAvatar($steamId, $avatar);
 
                             $results[$steamId] = $personaName;
                         }
                     }
                 }
             } catch (\Exception $e) {
-                Log::warning('Failed to batch fetch Steam user names', [
+                Log::warning('Failed to batch fetch Steam user profiles', [
                     'error' => $e->getMessage()
                 ]);
             }
@@ -404,6 +418,112 @@ class SteamLeaderboardService
         }
 
         return $results;
+    }
+
+    /**
+     * Get Steam users' profile data (names and avatars) from Steam IDs in batch
+     */
+    private function getSteamUserProfilesBatch(array $steamIds): array
+    {
+        if (empty($steamIds) || !$this->apiKey) {
+            return [];
+        }
+
+        // Remove duplicates
+        $steamIds = array_unique($steamIds);
+        $results = [];
+
+        // Check cache for each ID first
+        $uncachedIds = [];
+        foreach ($steamIds as $steamId) {
+            $cacheKey = "steam_user_profile_$steamId";
+            $cachedProfile = Cache::get($cacheKey);
+            if ($cachedProfile !== null) {
+                $results[$steamId] = $cachedProfile;
+                // Also update user avatar in database if needed
+                $this->updateUserAvatar($steamId, $cachedProfile['avatar']);
+            } else {
+                $uncachedIds[] = $steamId;
+            }
+        }
+
+        // If all are cached, return early
+        if (empty($uncachedIds)) {
+            return $results;
+        }
+
+        // Steam API allows up to 100 Steam IDs per request
+        $chunks = array_chunk($uncachedIds, 100);
+
+        foreach ($chunks as $chunk) {
+            try {
+                $response = Http::timeout(5)->get('https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/', [
+                    'key' => $this->apiKey,
+                    'steamids' => implode(',', $chunk),
+                ]);
+
+                if ($response->successful()) {
+                    $data = $response->json();
+                    if (isset($data['response']['players'])) {
+                        foreach ($data['response']['players'] as $player) {
+                            $steamId = $player['steamid'] ?? '';
+                            $personaName = $player['personaname'] ?? 'Player ' . substr($steamId, -4);
+                            $avatar = $player['avatarfull'] ?? $player['avatarmedium'] ?? $player['avatar'] ?? null;
+
+                            // Cache individual profile data
+                            $cacheKey = "steam_user_profile_$steamId";
+                            $profileData = [
+                                'name' => $personaName,
+                                'avatar' => $avatar
+                            ];
+                            Cache::put($cacheKey, $profileData, 3600);
+
+                            // Update user avatar in database
+                            $this->updateUserAvatar($steamId, $avatar);
+
+                            $results[$steamId] = $profileData;
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to batch fetch Steam user profiles', [
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+
+        // Fill in any missing profiles with default
+        foreach ($uncachedIds as $steamId) {
+            if (!isset($results[$steamId])) {
+                $results[$steamId] = [
+                    'name' => 'Player ' . substr($steamId, -4),
+                    'avatar' => null
+                ];
+            }
+        }
+
+        return $results;
+    }
+
+    /**
+     * Update user avatar in database if user exists
+     */
+    private function updateUserAvatar(string $steamId, ?string $avatar): void
+    {
+        if (!$avatar) {
+            return;
+        }
+
+        try {
+            \App\Models\User::where('steam_id', $steamId)
+                ->whereNull('avatar')
+                ->update(['avatar' => $avatar]);
+        } catch (\Exception $e) {
+            Log::warning('Failed to update user avatar', [
+                'steam_id' => $steamId,
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 
 }

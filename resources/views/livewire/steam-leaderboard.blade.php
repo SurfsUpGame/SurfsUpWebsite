@@ -57,8 +57,8 @@
                                                 <a href="/leaderboard/{{ $ranking['world_record']['steam_id'] }}"
                                                    class="flex items-center gap-1 text-white font-medium text-xs drop-shadow-lg hover:text-yellow-300 transition-colors duration-200">
                                                     @if(isset($ranking['world_record']['avatar_url']))
-                                                        <img src="{{ $ranking['world_record']['avatar_url'] }}" 
-                                                             alt="{{ $ranking['world_record']['persona_name'] }}" 
+                                                        <img src="{{ $ranking['world_record']['avatar_url'] }}"
+                                                             alt="{{ $ranking['world_record']['persona_name'] }}"
                                                              class="w-4 h-4 rounded-full border border-yellow-400">
                                                     @endif
                                                     <span class="truncate">{{ $ranking['world_record']['persona_name'] }}</span>
@@ -156,8 +156,8 @@
                                                 <a href="/leaderboard/{{ $ranking['world_record']['steam_id'] }}"
                                                    class="flex items-center gap-1 text-white font-medium text-xs drop-shadow-lg hover:text-yellow-300 transition-colors duration-200">
                                                     @if(isset($ranking['world_record']['avatar_url']))
-                                                        <img src="{{ $ranking['world_record']['avatar_url'] }}" 
-                                                             alt="{{ $ranking['world_record']['persona_name'] }}" 
+                                                        <img src="{{ $ranking['world_record']['avatar_url'] }}"
+                                                             alt="{{ $ranking['world_record']['persona_name'] }}"
                                                              class="w-4 h-4 rounded-full border border-yellow-400">
                                                     @endif
                                                     <span class="truncate">{{ $ranking['world_record']['persona_name'] }}</span>
@@ -264,7 +264,16 @@
                                                 <span class="text-white">#{{ $entry['rank'] }}</span>
                                             @endif
                                         </td>
-                                        <td class="py-3 pr-4 text-white">{{ $entry['persona_name'] }}</td>
+                                        <td class="py-3 pr-4 text-white">
+                                            <div class="flex items-center gap-2">
+                                                @if(isset($entry['avatar_url']) && $entry['avatar_url'])
+                                                    <img src="{{ $entry['avatar_url'] }}" 
+                                                         alt="{{ $entry['persona_name'] }}"
+                                                         class="w-6 h-6 rounded-full">
+                                                @endif
+                                                {{ $entry['persona_name'] }}
+                                            </div>
+                                        </td>
                                         <td class="py-3 pr-4 text-green-400">{{ number_format($entry['score'] / 1000, 2) }}</td>
                                     </tr>
                                 @endforeach
@@ -278,10 +287,19 @@
                                             </span>
                                         </td>
                                         <td class="py-3 pr-4 text-white {{ $entry['is_current_user'] ?? false ? 'font-bold text-blue-400' : '' }}">
-                                            {{ $entry['persona_name'] }}
-                                            @if($entry['is_current_user'] ?? false)
-                                                <span class="text-blue-400 text-sm">(You)</span>
-                                            @endif
+                                            <div class="flex items-center gap-2">
+                                                @if(isset($entry['avatar_url']) && $entry['avatar_url'])
+                                                    <img src="{{ $entry['avatar_url'] }}" 
+                                                         alt="{{ $entry['persona_name'] }}"
+                                                         class="w-6 h-6 rounded-full">
+                                                @endif
+                                                <span>
+                                                    {{ $entry['persona_name'] }}
+                                                    @if($entry['is_current_user'] ?? false)
+                                                        <span class="text-blue-400 text-sm">(You)</span>
+                                                    @endif
+                                                </span>
+                                            </div>
                                         </td>
                                         <td class="py-3 pr-4 text-green-400">{{ number_format($entry['score'] / 1000, 2) }}</td>
                                         <td class="py-3 text-gray-400">{{ $entry['details']['time'] ?? '-' }}</td>

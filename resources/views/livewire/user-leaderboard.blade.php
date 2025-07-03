@@ -55,59 +55,61 @@
                                     $imagePath = '/img/levels/default.png';
                                 }
                             @endphp
-                            <tr class="border-b border-gray-600 hover:bg-gray-600 transition relative overflow-hidden"
-                                style="background-image: linear-gradient(rgba(55, 65, 81, 0.85), rgba(55, 65, 81, 0.95)), url('{{ $imagePath }}'); background-size: cover; background-position: center;">
+                            @if(count($ranking['rank_data']) > 0)
+                                <tr class="border-b border-gray-600 hover:bg-gray-600 transition relative overflow-hidden"
+                                    style="background-image: linear-gradient(rgba(55, 65, 81, 0.85), rgba(55, 65, 81, 0.95)), url('{{ $imagePath }}'); background-size: cover; background-position: center;">
 
-                                <td class="p-3 relative z-10">
-                                    <div class="flex items-center gap-4">
-                                        <div class="flex-shrink-0">
-                                            <img src="{{ $imagePath }}"
-                                                 alt="{{ $ranking['display_name'] }}"
-                                                 class="w-16 h-16 rounded-lg object-cover border-2 border-gray-400 cursor-pointer transition-transform hover:scale-105 shadow-lg"
-                                                 wire:click="showImageModal('{{ $ranking['name'] }}', '{{ $ranking['display_name'] }}')"
-                                                 onerror="this.src='/img/levels/default.png'">
+                                    <td class="p-3 relative z-10">
+                                        <div class="flex items-center gap-4">
+                                            <div class="flex-shrink-0">
+                                                <img src="{{ $imagePath }}"
+                                                     alt="{{ $ranking['display_name'] }}"
+                                                     class="w-16 h-16 rounded-lg object-cover border-2 border-gray-400 cursor-pointer transition-transform hover:scale-105 shadow-lg"
+                                                     wire:click="showImageModal('{{ $ranking['name'] }}', '{{ $ranking['display_name'] }}')"
+                                                     onerror="this.src='/img/levels/default.png'">
+                                            </div>
+                                            <div>
+                                                <h4 class="text-white font-semibold text-lg drop-shadow-lg">{{ $ranking['display_name'] }}</h4>
+                                                <p class="text-gray-300 text-sm drop-shadow-lg">{{ ucfirst(str_replace('_', ' ', $ranking['name'])) }}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h4 class="text-white font-semibold text-lg drop-shadow-lg">{{ $ranking['display_name'] }}</h4>
-                                            <p class="text-gray-300 text-sm drop-shadow-lg">{{ ucfirst(str_replace('_', ' ', $ranking['name'])) }}</p>
-                                        </div>
-                                    </div>
-                                </td>
-                                @php
-                                    $rankData = $ranking['rank_data'];
-                                    $percentile = $rankData['percentile'] ?? null;
-                                    $rankGroup = $this->getRankGroup($percentile);
-                                @endphp
-                                <td class="p-3 text-center relative z-10">
-                                    @if(isset($rankData['rank']))
-                                        <span class="text-lg font-bold text-green-400 drop-shadow-lg">#{{ number_format($rankData['rank']) }}</span>
-                                    @else
-                                        <span class="text-lg font-bold drop-shadow-lg">-</span>
-                                    @endif
-                                </td>
-                                <td class="p-3 text-center relative z-10">
-                                    @if($rankGroup['name'] != '-')
-                                        <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold {{ $rankGroup['color'] }} {{ $rankGroup['bg'] }} border {{ $rankGroup['border'] }} drop-shadow-lg">
-                                            {{ $rankGroup['name'] }}
-                                        </span>
-                                    @else
-                                        <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold drop-shadow-lg">
-                                            {{ $rankGroup['name'] }}
-                                        </span>
-                                    @endif
+                                    </td>
+                                    @php
+                                        $rankData = $ranking['rank_data'];
+                                        $percentile = $rankData['percentile'] ?? null;
+                                        $rankGroup = $this->getRankGroup($percentile);
+                                    @endphp
+                                    <td class="p-3 text-center relative z-10">
+                                        @if(isset($rankData['rank']))
+                                            <span class="text-lg font-bold text-green-400 drop-shadow-lg">#{{ number_format($rankData['rank']) }}</span>
+                                        @else
+                                            <span class="text-lg font-bold drop-shadow-lg">-</span>
+                                        @endif
+                                    </td>
+                                    <td class="p-3 text-center relative z-10">
+                                        @if($rankGroup['name'] != '-')
+                                            <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold {{ $rankGroup['color'] }} {{ $rankGroup['bg'] }} border {{ $rankGroup['border'] }} drop-shadow-lg">
+                                                {{ $rankGroup['name'] }}
+                                            </span>
+                                        @else
+                                            <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold drop-shadow-lg">
+                                                {{ $rankGroup['name'] }}
+                                            </span>
+                                        @endif
 
-                                </td>
-                                <td class="p-3 text-center text-white relative z-10">
-                                    @if(isset($rankData['score']))
-                                        <span class="drop-shadow-lg">{{ number_format($rankData['score'] / 1000, 3) }}</span>
-                                    @else
-                                        <span class="drop-shadow-lg">-</span>
-                                    @endif
-                                </td>
-                                <td class="p-3 text-center text-white relative z-10">
-                                    <span class="drop-shadow-lg">{{ number_format($percentile, 1) }}%</span>
-                                </td>
-                            </tr>
+                                    </td>
+                                    <td class="p-3 text-center text-white relative z-10">
+                                        @if(isset($rankData['score']))
+                                            <span class="drop-shadow-lg">{{ number_format($rankData['score'] / 1000, 3) }}</span>
+                                        @else
+                                            <span class="drop-shadow-lg">-</span>
+                                        @endif
+                                    </td>
+                                    <td class="p-3 text-center text-white relative z-10">
+                                        <span class="drop-shadow-lg">{{ number_format($percentile, 1) }}%</span>
+                                    </td>
+                                </tr>
+                            @endif
                         @endforeach
                     </tbody>
                 </table>
