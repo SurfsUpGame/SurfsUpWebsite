@@ -6,7 +6,7 @@
             </h2>
 
             <p class="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
-                A competitive 2D roguelike auto shooter - <span class="text-white font-semibold">SurvivalScape</span> is on Steam!
+                A competitive 2D roguelike auto shooter - <span class="text-white font-semibold underline"><a href="https://store.steampowered.com/app/2862660/SurvivalScape/" target="_blank">SurvivalScape</a></span> is on Steam!
             </p>
 
             <div class="bg-gray-800 rounded-lg p-8 shadow-2xl max-w-3xl mx-auto">
