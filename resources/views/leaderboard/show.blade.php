@@ -6,11 +6,11 @@
     <title>{{ $user->name ?? 'Player' }}'s SurfsUp Leaderboard Rankings</title>
     <meta name="description" content="Check out {{ $user->name ?? 'this player' }}'s impressive leaderboard rankings in SurfsUp!">
     <meta name="keywords" content="SurfsUp, leaderboard, rankings, {{ $user->name ?? 'player' }}, steam, indie game">
-    
+
     <link rel="icon" type="image/x-icon" href="{{ asset('/img/favicon.ico') }}">
-    
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
+
     <script src="https://kit.fontawesome.com/d251d3e9b0.js" crossorigin="anonymous"></script>
     <script src="//unpkg.com/alpinejs" defer></script>
 
@@ -27,7 +27,7 @@
     <meta property="twitter:title" content="{{ $user->name ?? 'Player' }}'s SurfsUp Leaderboard Rankings">
     <meta property="twitter:description" content="Check out {{ $user->name ?? 'this player' }}'s impressive leaderboard rankings in SurfsUp!">
     <meta property="twitter:image" content="{{ asset('/img/surfsup-hero.png') }}">
-    
+
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-H68DQ85G4C"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
@@ -35,10 +35,12 @@
         gtag('js', new Date());
         gtag('config', 'G-H68DQ85G4C');
     </script>
+
+    <script async defer data-website-id="abdc3690-c6b3-4646-a2d7-0ebb14a3dea6" src="http://unami.prod.arneman.me/umami.js"></script>
 </head>
 <body class="bg-gray-900 text-white antialiased">
     @include('partials.header')
-    
+
     <main>
         <section class="bg-gradient-to-b from-gray-900 to-gray-800 pt-24 pb-16">
             <div class="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -48,7 +50,7 @@
             </div>
         </section>
     </main>
-    
+
     @include('partials.footer')
 
     <!-- Share URL Modal -->

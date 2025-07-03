@@ -22,11 +22,7 @@
         gtag('config', 'G-H68DQ85G4C');
     </script>
 
-    <script
-        src="https://app.rybbit.io/api/script.js"
-        data-site-id="1407"
-        defer
-    ></script>
+    <script async defer data-website-id="abdc3690-c6b3-4646-a2d7-0ebb14a3dea6" src="http://unami.prod.arneman.me/umami.js"></script>
 </head>
 <body class="bg-gray-900 text-white antialiased">
     @include('partials.header')

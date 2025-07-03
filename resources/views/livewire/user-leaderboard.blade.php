@@ -105,7 +105,7 @@
                                     @endif
                                 </td>
                                 <td class="p-3 text-center text-white relative z-10">
-                                    <span class="drop-shadow-lg">Top {{ number_format($percentile, 1) }}%</span>
+                                    <span class="drop-shadow-lg">{{ number_format($percentile, 1) }}%</span>
                                 </td>
                             </tr>
                         @endforeach
