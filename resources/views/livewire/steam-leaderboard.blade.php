@@ -12,15 +12,15 @@
         @auth
             <!-- Filter Toggle and Share Button -->
             <div class="mb-4 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <label class="flex items-center gap-2 text-gray-300 cursor-pointer">
-                        <input type="checkbox" wire:model.live="showOnlyWithScores" class="rounded bg-gray-700 border-gray-600 text-green-600 focus:ring-green-500 focus:ring-offset-gray-800">
-                        <span class="text-sm">Show only maps with world records</span>
-                    </label>
-                    <span class="text-xs text-gray-400">
-                        ({{ count($this->getFilteredRankings()) }} of {{ count($rankings) }} maps)
-                    </span>
-                </div>
+{{--                <div class="flex items-center gap-3">--}}
+{{--                    <label class="flex items-center gap-2 text-gray-300 cursor-pointer">--}}
+{{--                        <input type="checkbox" wire:model.live="showOnlyWithScores" class="rounded bg-gray-700 border-gray-600 text-green-600 focus:ring-green-500 focus:ring-offset-gray-800">--}}
+{{--                        <span class="text-sm">Show only maps with world records</span>--}}
+{{--                    </label>--}}
+{{--                    <span class="text-xs text-gray-400">--}}
+{{--                        ({{ count($this->getFilteredRankings()) }} of {{ count($rankings) }} maps)--}}
+{{--                    </span>--}}
+{{--                </div>--}}
                 @if(Auth::check() && Auth::user()->steam_id)
                     <a href="/leaderboard/{{ Auth::user()->steam_id }}" class="flex items-center gap-2 bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg text-sm transition">
                         <i class="fas fa-clock"></i>

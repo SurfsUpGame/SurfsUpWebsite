@@ -67,7 +67,7 @@ final class SteamAuthController
     private function firstOrCreate(string $steamId, array $steamUser): User
     {
         try {
-            return User::firstOrCreate([
+            $user = User::firstOrCreate([
                 'steam_id' => $steamId,
             ], [
                 'name' => $steamUser['personaname'],
@@ -75,6 +75,15 @@ final class SteamAuthController
                 'email' => $steamId . '@steamauth.local',
                 'password' => bcrypt(str()->random(32)),
             ]);
+
+            // Update avatar, name, and last login time on every login
+            $user->update([
+                'avatar' => $steamUser['avatarfull'],
+                'name' => $steamUser['personaname'],
+                'last_login_at' => now(),
+            ]);
+
+            return $user;
         } catch (\Exception $e) {
             Log::error('Failed to create/find user', [
                 'error' => $e->getMessage(),

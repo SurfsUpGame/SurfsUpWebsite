@@ -60,6 +60,12 @@
                              x-transition:leave-start="opacity-100 transform scale-100"
                              x-transition:leave-end="opacity-0 transform scale-95"
                              class="absolute right-0 mt-2 w-56 bg-gray-800 rounded-md shadow-lg py-1 z-50">
+                            @if(auth()->user()->hasRole('admin'))
+                                <a href="/admin" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                                    <i class="fas fa-shield-alt mr-2"></i> Admin Panel
+                                </a>
+                                <hr class="my-1 border-gray-700">
+                            @endif
                             <a href="https://bearlikelion.github.io/SurfsUpSDK/" target="_blank" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-200">
                                 <i class="fas fa-code mr-2"></i> Map Making SDK
                             </a>
@@ -121,6 +127,11 @@
                             <img src="{{ auth()->user()->avatar }}" alt="{{ auth()->user()->name }}" class="w-6 h-6 rounded-full border border-blue-500">
                             <span>{{ auth()->user()->name }}</span>
                         </div>
+                        @if(auth()->user()->hasRole('admin'))
+                            <a href="/admin" class="block px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors duration-200">
+                                <i class="fas fa-shield-alt mr-2"></i> Admin Panel
+                            </a>
+                        @endif
                         <a href="https://bearlikelion.github.io/SurfsUpSDK/" target="_blank" class="block px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors duration-200">
                             <i class="fas fa-code mr-2"></i> Map Making SDK
                         </a>
