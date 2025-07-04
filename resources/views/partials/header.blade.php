@@ -165,7 +165,7 @@
             </div>
         </nav>
     </div>
-    
+
     <!-- Impersonation Banner -->
     @if(Session::has('impersonator_id'))
         <div class="bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-4 py-2 text-sm font-medium shadow-lg">
@@ -175,13 +175,10 @@
                     <span>🔒 IMPERSONATING: {{ auth()->user()->name }}</span>
                     <span class="opacity-75">| Admin View Active</span>
                 </div>
-                <form method="POST" action="{{ route('admin.impersonate.stop') }}" class="inline">
-                    @csrf
-                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-medium transition-colors duration-200">
-                        <i class="fas fa-stop mr-1"></i>
-                        Stop Impersonating
-                    </button>
-                </form>
+                <a href="{{ route('admin.impersonate.stop') }}" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+                    <i class="fas fa-stop mr-1"></i>
+                    Stop Impersonating
+                </a>
             </div>
         </div>
     @endif

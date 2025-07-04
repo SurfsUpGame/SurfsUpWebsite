@@ -23,10 +23,10 @@ class ImpersonationController extends Controller
 
         // Store the original user ID in session
         Session::put('impersonator_id', auth()->id());
-        
+
         // Login as the target user
         Auth::login($user);
-        
+
         return redirect('/')->with('success', "You are now impersonating {$user->name}");
     }
 
@@ -39,7 +39,7 @@ class ImpersonationController extends Controller
 
         // Get the original user
         $originalUser = User::find(Session::get('impersonator_id'));
-        
+
         if (!$originalUser) {
             Session::forget('impersonator_id');
             return redirect('/')->with('error', 'Original user not found. Please login again.');
@@ -47,10 +47,10 @@ class ImpersonationController extends Controller
 
         // Remove impersonation session
         Session::forget('impersonator_id');
-        
+
         // Login back as original user
         Auth::login($originalUser);
-        
+
         return redirect('/')->with('success', 'Stopped impersonating. You are now logged in as yourself.');
     }
 
@@ -62,7 +62,7 @@ class ImpersonationController extends Controller
         }
 
         $users = User::orderBy('name')->paginate(20);
-        
+
         return view('admin.impersonation', compact('users'));
     }
 }

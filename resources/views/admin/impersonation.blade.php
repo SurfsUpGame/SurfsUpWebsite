@@ -32,7 +32,7 @@
         <div class="mt-16 mb-8">
             <h1 class="text-4xl font-bold text-center text-gray-800 mb-4">User Impersonation</h1>
             <p class="text-center text-gray-600 mb-8">Select a user to impersonate from the list below. This allows you to see the site from their perspective.</p>
-            
+
             @if(Session::has('impersonator_id'))
                 <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6 rounded">
                     <div class="flex items-center justify-between">
@@ -40,13 +40,10 @@
                             <i class="fas fa-user-secret mr-2"></i>
                             <span class="font-medium">You are currently impersonating: {{ auth()->user()->name }}</span>
                         </div>
-                        <form method="POST" action="{{ route('admin.impersonate.stop') }}" class="inline">
-                            @csrf
-                            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
-                                <i class="fas fa-stop mr-1"></i>
-                                Stop Impersonating
-                            </button>
-                        </form>
+                        <a href="{{ route('admin.impersonate.stop') }}" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+                            <i class="fas fa-stop mr-1"></i>
+                            Stop Impersonating
+                        </a>
                     </div>
                 </div>
             @endif
@@ -56,7 +53,7 @@
         <div class="mb-6">
             <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center space-x-4">
-                    <input type="text" id="userSearch" placeholder="Search users..." 
+                    <input type="text" id="userSearch" placeholder="Search users..."
                            class="px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     <select id="roleFilter" class="px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="">All Roles</option>
@@ -86,8 +83,8 @@
                     </thead>
                     <tbody class="bg-gray-800 divide-y divide-gray-700" id="usersTableBody">
                         @foreach($users as $user)
-                            <tr class="user-row hover:bg-gray-700 transition-colors" 
-                                data-name="{{ strtolower($user->name) }}" 
+                            <tr class="user-row hover:bg-gray-700 transition-colors"
+                                data-name="{{ strtolower($user->name) }}"
                                 data-email="{{ strtolower($user->email ?? '') }}"
                                 data-roles="{{ strtolower($user->roles->pluck('name')->implode(' ')) }}">
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -114,7 +111,7 @@
                                     <div class="flex flex-wrap gap-1">
                                         @forelse($user->roles as $role)
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                                {{ $role->name === 'admin' ? 'bg-red-100 text-red-800' : 
+                                                {{ $role->name === 'admin' ? 'bg-red-100 text-red-800' :
                                                    ($role->name === 'staff' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800') }}">
                                                 {{ ucfirst($role->name) }}
                                             </span>
@@ -130,10 +127,10 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     @if(auth()->id() !== $user->id)
-                                        <form method="POST" action="{{ route('admin.impersonate.start', $user) }}" class="inline" 
+                                        <form method="POST" action="{{ route('admin.impersonate.start', $user) }}" class="inline"
                                               onsubmit="return confirm('Are you sure you want to impersonate {{ addslashes($user->name) }}?');">
                                             @csrf
-                                            <button type="submit" 
+                                            <button type="submit"
                                                     class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs font-medium transition-colors duration-200">
                                                 <i class="fas fa-user-secret mr-1"></i>
                                                 Impersonate
@@ -183,12 +180,12 @@
                 const email = row.dataset.email;
                 const roles = row.dataset.roles;
 
-                const matchesSearch = !searchTerm || 
-                    name.includes(searchTerm) || 
+                const matchesSearch = !searchTerm ||
+                    name.includes(searchTerm) ||
                     email.includes(searchTerm);
 
-                const matchesRole = !roleFilter || 
-                    roles.includes(roleFilter) || 
+                const matchesRole = !roleFilter ||
+                    roles.includes(roleFilter) ||
                     (roleFilter === 'user' && roles === '');
 
                 if (matchesSearch && matchesRole) {
