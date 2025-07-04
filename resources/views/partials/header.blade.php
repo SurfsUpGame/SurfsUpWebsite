@@ -40,6 +40,10 @@
                     <i class="fab fa-youtube"></i>
                     <span>YouTube</span>
                 </a>
+                <a href="{{ route('roadmap') }}" class="text-gray-300 hover:text-white transition-colors duration-200 flex items-center space-x-2">
+                    <i class="fas fa-map"></i>
+                    <span>Roadmap</span>
+                </a>
 
                 @auth
                     <div class="relative ml-3">
@@ -69,9 +73,6 @@
                             <a href="https://bearlikelion.github.io/SurfsUpSDK/" target="_blank" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-200">
                                 <i class="fas fa-code mr-2"></i> Map Making SDK
                             </a>
-                            <a href="https://trello.com/b/6w7tMciD/surfsup-roadmap" target="_blank" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-200">
-                                <i class="fas fa-map mr-2"></i> View Roadmap
-                            </a>
                             <a href="/leaderboard/{{ auth()->user()->steam_id }}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-200">
                                 <i class="fas fa-trophy mr-2"></i> View My Leaderboard
                             </a>
@@ -93,7 +94,7 @@
             </nav>
         </div>
 
-        <nav x-show="open" 
+        <nav x-show="open"
              x-transition:enter="transition ease-out duration-200"
              x-transition:enter-start="opacity-0 transform -translate-y-2"
              x-transition:enter-end="opacity-100 transform translate-y-0"
@@ -120,7 +121,10 @@
                 <a href="https://youtube.com/@bearlikelion" target="_blank" class="block px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors duration-200">
                     <i class="fab fa-youtube mr-2"></i> YouTube
                 </a>
-                
+                <a href="{{ route('roadmap') }}" class="block px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors duration-200">
+                    <i class="fas fa-map mr-2"></i> Roadmap
+                </a>
+
                 @auth
                     <div class="border-t border-gray-700 mt-2 pt-2">
                         <div class="px-3 py-2 text-gray-400 text-sm flex items-center space-x-2">
@@ -135,7 +139,7 @@
                         <a href="https://bearlikelion.github.io/SurfsUpSDK/" target="_blank" class="block px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors duration-200">
                             <i class="fas fa-code mr-2"></i> Map Making SDK
                         </a>
-                        <a href="https://trello.com/b/6w7tMciD/surfsup-roadmap" target="_blank" class="block px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors duration-200">
+                        <a href="{{ route('roadmap') }}" class="block px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors duration-200">
                             <i class="fas fa-map mr-2"></i> View Roadmap
                         </a>
                         <a href="/leaderboard/{{ auth()->user()->steam_id }}" class="block px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors duration-200">

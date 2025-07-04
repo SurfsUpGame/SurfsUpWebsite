@@ -13,6 +13,7 @@
         "laravel/tinker": "^2.10.1",
         "livewire/flux": "^2.1.1",
         "livewire/volt": "^1.7.0",
+        "mokhosh/filament-kanban": "^2.10",
         "spatie/laravel-backup": "^9.3"
     },
     "require-dev": {
