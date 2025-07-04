@@ -20,6 +20,7 @@ Route::get('/leaderboard/{steamId}', [LeaderboardController::class, 'show'])->na
 Route::get('/roadmap', [RoadmapController::class, 'index'])->name('roadmap');
 Route::post('/roadmap', [RoadmapController::class, 'store'])->name('roadmap.store')->middleware('auth');
 Route::patch('/roadmap/task/{task}/status', [RoadmapController::class, 'updateStatus'])->name('roadmap.task.update-status')->middleware('auth');
+Route::patch('/roadmap/task/{task}', [RoadmapController::class, 'update'])->name('roadmap.task.update')->middleware('auth');
 Route::patch('/roadmap/task/{task}/archive', [RoadmapController::class, 'archive'])->name('roadmap.task.archive')->middleware('auth');
 Route::delete('/roadmap/task/{task}', [RoadmapController::class, 'destroy'])->name('roadmap.task.destroy')->middleware('auth');
 

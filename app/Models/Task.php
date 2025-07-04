@@ -18,6 +18,9 @@ class Task extends Model
         'due_date',
         'created_by',
         'archived_at',
+        'sprint_id',
+        'epic_id',
+        'priority',
     ];
 
     protected $casts = [
@@ -34,5 +37,20 @@ class Task extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function sprint()
+    {
+        return $this->belongsTo(Sprint::class);
+    }
+
+    public function epic()
+    {
+        return $this->belongsTo(Epic::class);
+    }
+
+    public function labels()
+    {
+        return $this->belongsToMany(Label::class, 'task_labels');
     }
 }

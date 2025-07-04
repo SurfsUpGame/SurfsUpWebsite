@@ -30,8 +30,6 @@
     <main>
         @include('partials.hero')
 
-        @include('partials.live-streams')
-
         @include('partials.media-section')
 
         @include('partials.survivalscape-promo')

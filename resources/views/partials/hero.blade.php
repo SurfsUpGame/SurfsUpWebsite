@@ -49,6 +49,8 @@
 </section>
 @endguest
 
+@include('partials.live-streams')
+
 <section class="bg-gradient-to-b from-gray-900 to-gray-800 pt-24 pb-16">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
         @livewire('steam-leaderboard')
