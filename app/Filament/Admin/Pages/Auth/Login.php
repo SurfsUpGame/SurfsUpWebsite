@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Pages\Auth;
 
+use Filament\Actions\Action;
 use Filament\Forms\Form;
 use Filament\Pages\Auth\Login as BaseLogin;
 use Illuminate\Contracts\Support\Htmlable;
@@ -18,11 +19,23 @@ class Login extends BaseLogin
         return parent::form($form);
     }
 
+    protected function getForms(): array
+    {
+        return [
+            'form' => $this->form(
+                $this->makeForm()
+                    ->schema([
+                    ])
+                    ->statePath('data'),
+            ),
+        ];
+    }
+
     protected function getFormActions(): array
     {
-        return array_merge(parent::getFormActions(), [
+        return [
             $this->getSteamLoginAction(),
-        ]);
+        ];
     }
 
     protected function getSteamLoginAction(): \Filament\Actions\Action
@@ -39,11 +52,6 @@ class Login extends BaseLogin
 
     public function getHeading(): string|Htmlable
     {
-        return 'Sign in to your account';
-    }
-
-    public function getSubheading(): string|Htmlable|null
-    {
-        return 'Or use your Steam account';
+        return 'Sign in with your Steam account';
     }
 }
