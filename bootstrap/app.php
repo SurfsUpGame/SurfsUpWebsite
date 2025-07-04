@@ -30,6 +30,16 @@ return Application::configure(basePath: dirname(__DIR__))
                  ->hourly()
                  ->withoutOverlapping()
                  ->runInBackground();
+
+        $schedule->command('steam:collect-player-count')
+                 ->everyFiveMinutes()
+                 ->withoutOverlapping()
+                 ->runInBackground();
+
+        $schedule->command('steam:cleanup-history')
+                 ->monthly()
+                 ->withoutOverlapping()
+                 ->runInBackground();
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

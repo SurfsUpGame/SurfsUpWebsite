@@ -38,8 +38,10 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\\Filament\\Admin\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                \App\Filament\Admin\Widgets\CurrentPlayersWidget::class,
+                \App\Filament\Admin\Widgets\PlayerCountChartWidget::class,
+                // Widgets\AccountWidget::class,
+                // Widgets\FilamentInfoWidget::class,
             ])
             ->userMenuItems([
                 MenuItem::make()

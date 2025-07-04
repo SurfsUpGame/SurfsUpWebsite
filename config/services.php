@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'steam' => [
+        'api_key' => env('STEAM_PUBLISHER_API_KEY'),
+        'app_id' => env('STEAM_APP_ID', '3454830'),
+    ],
+
 ];
