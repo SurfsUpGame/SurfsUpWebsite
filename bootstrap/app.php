@@ -25,6 +25,11 @@ return Application::configure(basePath: dirname(__DIR__))
                  ->everyFiveMinutes()
                  ->withoutOverlapping()
                  ->runInBackground();
+
+        $schedule->command('leaderboards:cache')
+                 ->hourly()
+                 ->withoutOverlapping()
+                 ->runInBackground();
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
