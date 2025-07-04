@@ -24,4 +24,9 @@ Route::patch('/roadmap/task/{task}', [RoadmapController::class, 'update'])->name
 Route::patch('/roadmap/task/{task}/archive', [RoadmapController::class, 'archive'])->name('roadmap.task.archive')->middleware('auth');
 Route::delete('/roadmap/task/{task}', [RoadmapController::class, 'destroy'])->name('roadmap.task.destroy')->middleware('auth');
 
+// API Routes
+Route::prefix('api')->group(function () {
+    Route::get('/steam-news', [App\Http\Controllers\SteamNewsController::class, 'index'])->name('api.steam-news');
+});
+
 require __DIR__.'/auth.php';

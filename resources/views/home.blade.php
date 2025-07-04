@@ -30,6 +30,8 @@
     <main>
         @include('partials.hero')
 
+        @include('partials.steam-news')
+
         @include('partials.media-section')
 
         @include('partials.survivalscape-promo')
