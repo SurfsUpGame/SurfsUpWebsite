@@ -28,7 +28,7 @@
                     <div class="absolute inset-0 rounded-lg bg-blue-400 opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
                 </a>
 
-                <a href="https://trello.com/b/6w7tMciD/surfsup-roadmap"
+                <a href="{{ route('roadmap') }}"
                    target="_blank"
                    class="group relative inline-flex items-center gap-3 bg-orange-600 hover:bg-orange-700 px-8 py-4 rounded-lg text-white font-medium transition-all duration-200 transform hover:scale-105 hover:shadow-xl">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
