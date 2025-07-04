@@ -17,8 +17,8 @@
     <style>
         [x-cloak] { display: none !important; }
         .kanban-column {
-            min-width: 300px;
-            max-width: 350px;
+            flex: 1;
+            min-width: 280px;
         }
         .kanban-card {
             cursor: move;
@@ -73,13 +73,13 @@
                     </div>
                 </div>
 
-                <div class="flex overflow-x-auto gap-6 pb-4 justify-center">
+                <div class="flex overflow-x-auto gap-6 pb-4">
                     @foreach($statuses as $status)
                         @if(!in_array($status->value, ['backlog', 'ideas']))
                             @php
                                 $sprintTasks = ($tasksByStatus[$status->value] ?? collect())->where('sprint_id', $sprint->id);
                             @endphp
-                            <div class="kanban-column flex-shrink-0">
+                            <div class="kanban-column">
                                 <div class="bg-gray-800 rounded-lg p-4">
                                     <h3 class="text-xl font-semibold mb-4 text-{{ $status->getColor() }}-400">
                                         {{ $status->getTitle() }} ({{ $sprintTasks->count() }})
@@ -157,6 +157,45 @@
                                                     </div>
                                                 @endif
 
+                                                <!-- Voting buttons -->
+                                                @auth
+                                                    <div class="flex items-center justify-between mb-2">
+                                                        <div class="flex items-center space-x-2">
+                                                            <button onclick="vote({{ $task->id }}, 1, event)" 
+                                                                    class="vote-btn upvote flex items-center space-x-1 px-2 py-1 rounded text-xs transition-colors
+                                                                           {{ $task->user_vote === 1 ? 'bg-green-600 text-white' : 'bg-gray-600 text-gray-300 hover:bg-green-600 hover:text-white' }}">
+                                                                <i class="fas fa-thumbs-up"></i>
+                                                                <span class="upvote-count">{{ $task->upvote_count }}</span>
+                                                            </button>
+                                                            <button onclick="vote({{ $task->id }}, -1, event)" 
+                                                                    class="vote-btn downvote flex items-center space-x-1 px-2 py-1 rounded text-xs transition-colors
+                                                                           {{ $task->user_vote === -1 ? 'bg-red-600 text-white' : 'bg-gray-600 text-gray-300 hover:bg-red-600 hover:text-white' }}">
+                                                                <i class="fas fa-thumbs-down"></i>
+                                                                <span class="downvote-count">{{ $task->downvote_count }}</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="text-xs text-gray-400">
+                                                            Score: <span class="vote-score font-semibold text-white">{{ $task->vote_score }}</span>
+                                                        </div>
+                                                    </div>
+                                                @else
+                                                    <div class="flex items-center justify-between mb-2">
+                                                        <div class="flex items-center space-x-2">
+                                                            <div class="flex items-center space-x-1 px-2 py-1 rounded text-xs bg-gray-600 text-gray-300">
+                                                                <i class="fas fa-thumbs-up"></i>
+                                                                <span>{{ $task->upvote_count }}</span>
+                                                            </div>
+                                                            <div class="flex items-center space-x-1 px-2 py-1 rounded text-xs bg-gray-600 text-gray-300">
+                                                                <i class="fas fa-thumbs-down"></i>
+                                                                <span>{{ $task->downvote_count }}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="text-xs text-gray-400">
+                                                            Score: <span class="font-semibold text-white">{{ $task->vote_score }}</span>
+                                                        </div>
+                                                    </div>
+                                                @endauth
+
                                                 <div class="flex items-center justify-between text-xs text-gray-400">
                                                     @if($task->user)
                                                         <div class="flex items-center space-x-2">
@@ -204,10 +243,10 @@
             <div class="mb-12">
                 <h2 class="text-3xl font-bold text-gray-800 mb-6">Unassigned Tasks</h2>
 
-                <div class="flex overflow-x-auto gap-6 pb-4 justify-center">
+                <div class="flex overflow-x-auto gap-6 pb-4">
                     @foreach($statuses as $status)
                         @if(!in_array($status->value, ['backlog', 'ideas']) && isset($tasksWithoutSprint[$status->value]) && $tasksWithoutSprint[$status->value]->count() > 0)
-                            <div class="kanban-column flex-shrink-0">
+                            <div class="kanban-column">
                                 <div class="bg-gray-800 rounded-lg p-4">
                                     <h3 class="text-xl font-semibold mb-4 text-{{ $status->getColor() }}-400">
                                         {{ $status->getTitle() }} ({{ $tasksWithoutSprint[$status->value]->count() }})
@@ -284,6 +323,45 @@
                                                         @endforeach
                                                     </div>
                                                 @endif
+
+                                                <!-- Voting buttons -->
+                                                @auth
+                                                    <div class="flex items-center justify-between mb-2">
+                                                        <div class="flex items-center space-x-2">
+                                                            <button onclick="vote({{ $task->id }}, 1, event)" 
+                                                                    class="vote-btn upvote flex items-center space-x-1 px-2 py-1 rounded text-xs transition-colors
+                                                                           {{ $task->user_vote === 1 ? 'bg-green-600 text-white' : 'bg-gray-600 text-gray-300 hover:bg-green-600 hover:text-white' }}">
+                                                                <i class="fas fa-thumbs-up"></i>
+                                                                <span class="upvote-count">{{ $task->upvote_count }}</span>
+                                                            </button>
+                                                            <button onclick="vote({{ $task->id }}, -1, event)" 
+                                                                    class="vote-btn downvote flex items-center space-x-1 px-2 py-1 rounded text-xs transition-colors
+                                                                           {{ $task->user_vote === -1 ? 'bg-red-600 text-white' : 'bg-gray-600 text-gray-300 hover:bg-red-600 hover:text-white' }}">
+                                                                <i class="fas fa-thumbs-down"></i>
+                                                                <span class="downvote-count">{{ $task->downvote_count }}</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="text-xs text-gray-400">
+                                                            Score: <span class="vote-score font-semibold text-white">{{ $task->vote_score }}</span>
+                                                        </div>
+                                                    </div>
+                                                @else
+                                                    <div class="flex items-center justify-between mb-2">
+                                                        <div class="flex items-center space-x-2">
+                                                            <div class="flex items-center space-x-1 px-2 py-1 rounded text-xs bg-gray-600 text-gray-300">
+                                                                <i class="fas fa-thumbs-up"></i>
+                                                                <span>{{ $task->upvote_count }}</span>
+                                                            </div>
+                                                            <div class="flex items-center space-x-1 px-2 py-1 rounded text-xs bg-gray-600 text-gray-300">
+                                                                <i class="fas fa-thumbs-down"></i>
+                                                                <span>{{ $task->downvote_count }}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="text-xs text-gray-400">
+                                                            Score: <span class="font-semibold text-white">{{ $task->vote_score }}</span>
+                                                        </div>
+                                                    </div>
+                                                @endauth
 
                                                 <div class="flex items-center justify-between text-xs text-gray-400">
                                                     @if($task->user)
@@ -796,10 +874,10 @@
                                 </div>
                                 <div>
                                     <h3 class="text-sm font-semibold text-gray-300 mb-1">Priority</h3>
-                                    <p class="text-gray-200 flex items-center">
-                                        <i class="fas fa-exclamation-triangle mr-2"></i>
-                                        <span x-text="selectedTask ? selectedTask.priority : ''"></span>
-                                    </p>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-exclamation-triangle mr-2 text-yellow-500"></i>
+                                        <span class="text-gray-200" x-text="selectedTask ? selectedTask.priority : ''"></span>
+                                    </div>
                                 </div>
                             </div>
 
@@ -817,15 +895,59 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <h3 class="text-sm font-semibold text-gray-300 mb-1">Assigned To</h3>
-                                    <p class="text-gray-200" x-text="selectedTask ? selectedTask.assigned_user : ''"></p>
+                                    <div class="flex items-center space-x-2" x-show="selectedTask && selectedTask.assigned_user && selectedTask.assigned_user !== 'Unassigned'">
+                                        <div x-show="selectedTask && selectedTask.assigned_user_avatar">
+                                            <img :src="selectedTask.assigned_user_avatar" :alt="selectedTask.assigned_user" class="w-6 h-6 rounded-full border border-gray-500">
+                                        </div>
+                                        <div x-show="selectedTask && !selectedTask.assigned_user_avatar && selectedTask.assigned_user_initials">
+                                            <div class="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-medium" x-text="selectedTask.assigned_user_initials"></div>
+                                        </div>
+                                        <span class="text-gray-200" x-text="selectedTask ? selectedTask.assigned_user : ''"></span>
+                                    </div>
+                                    <span x-show="!selectedTask || !selectedTask.assigned_user || selectedTask.assigned_user === 'Unassigned'" class="text-gray-400 italic">Unassigned</span>
                                 </div>
                                 <div>
                                     <h3 class="text-sm font-semibold text-gray-300 mb-1">Due Date</h3>
-                                    <p class="text-gray-200" x-text="selectedTask ? selectedTask.due_date : ''"></p>
+                                    <div class="flex items-center text-gray-200" x-show="selectedTask && selectedTask.due_date && selectedTask.due_date !== 'No due date'">
+                                        <i class="fas fa-calendar mr-2 text-blue-400"></i>
+                                        <span x-text="selectedTask ? selectedTask.due_date : ''"></span>
+                                    </div>
+                                    <span x-show="!selectedTask || !selectedTask.due_date || selectedTask.due_date === 'No due date'" class="text-gray-400 italic">No due date</span>
+                                </div>
+                            </div>
+
+                            <div x-show="selectedTask && selectedTask.labels && selectedTask.labels.length > 0">
+                                <h3 class="text-sm font-semibold text-gray-300 mb-2">Labels</h3>
+                                <div class="flex flex-wrap gap-2">
+                                    <template x-for="label in (selectedTask ? selectedTask.labels : [])" :key="label">
+                                        <span class="inline-block px-2 py-1 text-xs rounded bg-gray-600 text-gray-200 border border-gray-500" x-text="label"></span>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3 class="text-sm font-semibold text-gray-300 mb-2">Task Information</h3>
+                                <div class="text-xs text-gray-400 space-y-1 bg-gray-700 p-3 rounded-md">
+                                    <div class="flex items-center" x-show="selectedTask && selectedTask.creator">
+                                        <i class="fas fa-user-plus mr-2 text-green-400"></i>
+                                        <span>Created by: </span>
+                                        <div class="flex items-center space-x-2 ml-1">
+                                            <div x-show="selectedTask && selectedTask.creator_avatar">
+                                                <img :src="selectedTask.creator_avatar" :alt="selectedTask.creator" class="w-4 h-4 rounded-full border border-gray-500">
+                                            </div>
+                                            <div x-show="selectedTask && !selectedTask.creator_avatar && selectedTask.creator_initials">
+                                                <div class="w-4 h-4 rounded-full bg-green-600 flex items-center justify-center text-white text-xs font-medium" x-text="selectedTask.creator_initials"></div>
+                                            </div>
+                                            <span x-text="selectedTask ? selectedTask.creator : ''"></span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center" x-show="selectedTask && selectedTask.created_at">
+                                        <i class="fas fa-clock mr-2 text-blue-400"></i>
+                                        <span>Created: <span x-text="selectedTask ? selectedTask.created_at : ''"></span></span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-
                         <div class="mt-6 flex justify-end">
                             <button @click="showDetailsModal = false" class="bg-gray-600 hover:bg-gray-700 px-4 py-2 rounded-md text-white font-medium transition-colors duration-200">
                                 Close
@@ -1147,6 +1269,79 @@
                     return closest;
                 }
             }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        // Voting function
+        function vote(taskId, voteValue, event) {
+            event.stopPropagation(); // Prevent opening task details modal
+            
+            fetch(`/roadmap/task/${taskId}/vote`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    vote: voteValue
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Find the task card and update vote counts
+                    const taskCard = event.target.closest('.kanban-card');
+                    
+                    // Update upvote count
+                    const upvoteCount = taskCard.querySelector('.upvote-count');
+                    if (upvoteCount) {
+                        upvoteCount.textContent = data.upvote_count;
+                    }
+                    
+                    // Update downvote count
+                    const downvoteCount = taskCard.querySelector('.downvote-count');
+                    if (downvoteCount) {
+                        downvoteCount.textContent = data.downvote_count;
+                    }
+                    
+                    // Update vote score
+                    const voteScore = taskCard.querySelector('.vote-score');
+                    if (voteScore) {
+                        voteScore.textContent = data.vote_score;
+                    }
+                    
+                    // Update button states
+                    const upvoteBtn = taskCard.querySelector('.upvote');
+                    const downvoteBtn = taskCard.querySelector('.downvote');
+                    
+                    // Reset button classes
+                    upvoteBtn.className = upvoteBtn.className.replace(/(bg-green-600|text-white)/g, '').replace(/\s+/g, ' ').trim();
+                    downvoteBtn.className = downvoteBtn.className.replace(/(bg-red-600|text-white)/g, '').replace(/\s+/g, ' ').trim();
+                    
+                    if (!upvoteBtn.className.includes('bg-gray-600')) {
+                        upvoteBtn.className += ' bg-gray-600 text-gray-300 hover:bg-green-600 hover:text-white';
+                    }
+                    if (!downvoteBtn.className.includes('bg-gray-600')) {
+                        downvoteBtn.className += ' bg-gray-600 text-gray-300 hover:bg-red-600 hover:text-white';
+                    }
+                    
+                    // Apply active state based on user's current vote
+                    if (data.user_vote === 1) {
+                        upvoteBtn.className = upvoteBtn.className.replace(/(bg-gray-600|text-gray-300|hover:bg-green-600|hover:text-white)/g, '').replace(/\s+/g, ' ').trim();
+                        upvoteBtn.className += ' bg-green-600 text-white';
+                    } else if (data.user_vote === -1) {
+                        downvoteBtn.className = downvoteBtn.className.replace(/(bg-gray-600|text-gray-300|hover:bg-red-600|hover:text-white)/g, '').replace(/\s+/g, ' ').trim();
+                        downvoteBtn.className += ' bg-red-600 text-white';
+                    }
+                    
+                    console.log('Vote registered successfully');
+                } else {
+                    alert('Failed to register vote: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error voting:', error);
+                alert('Error voting on task');
+            });
         }
     </script>
 </body>

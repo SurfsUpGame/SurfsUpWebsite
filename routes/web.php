@@ -23,6 +23,14 @@ Route::patch('/roadmap/task/{task}/status', [RoadmapController::class, 'updateSt
 Route::patch('/roadmap/task/{task}', [RoadmapController::class, 'update'])->name('roadmap.task.update')->middleware('auth');
 Route::patch('/roadmap/task/{task}/archive', [RoadmapController::class, 'archive'])->name('roadmap.task.archive')->middleware('auth');
 Route::delete('/roadmap/task/{task}', [RoadmapController::class, 'destroy'])->name('roadmap.task.destroy')->middleware('auth');
+Route::post('/roadmap/task/{task}/vote', [RoadmapController::class, 'vote'])->name('roadmap.task.vote')->middleware('auth');
+
+// Impersonation Routes (Admin only)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/impersonate', [App\Http\Controllers\ImpersonationController::class, 'userList'])->name('admin.impersonate.list');
+    Route::post('/admin/impersonate/{user}', [App\Http\Controllers\ImpersonationController::class, 'start'])->name('admin.impersonate.start');
+    Route::post('/admin/impersonate/stop', [App\Http\Controllers\ImpersonationController::class, 'stop'])->name('admin.impersonate.stop');
+});
 
 // API Routes
 Route::prefix('api')->group(function () {

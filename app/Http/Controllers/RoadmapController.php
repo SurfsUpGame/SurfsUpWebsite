@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Sprint;
 use App\Models\Epic;
 use App\Models\Label;
+use App\Models\TaskVote;
 use App\Enums\TaskStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -15,7 +16,7 @@ class RoadmapController extends Controller
 {
     public function index()
     {
-        $tasks = Task::with(['user', 'creator', 'sprint', 'epic', 'labels'])->whereNull('archived_at')->get();
+        $tasks = Task::with(['user', 'creator', 'sprint', 'epic', 'labels', 'votes'])->whereNull('archived_at')->get();
         $statuses = TaskStatus::cases();
         $sprints = Sprint::all();
         $epics = Epic::where('is_active', true)->get();
@@ -165,5 +166,55 @@ class RoadmapController extends Controller
         $task->delete();
         
         return response()->json(['success' => true, 'message' => 'Task deleted successfully']);
+    }
+
+    public function vote(Request $request, Task $task)
+    {
+        // Check if user is authenticated
+        if (!auth()->check()) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $validated = $request->validate([
+            'vote' => 'required|integer|in:-1,1',
+        ]);
+
+        $userId = auth()->id();
+        $existingVote = TaskVote::where('task_id', $task->id)
+                              ->where('user_id', $userId)
+                              ->first();
+
+        if ($existingVote) {
+            if ($existingVote->vote == $validated['vote']) {
+                // Same vote - remove it (toggle off)
+                $existingVote->delete();
+                $action = 'removed';
+            } else {
+                // Different vote - update it
+                $existingVote->update(['vote' => $validated['vote']]);
+                $action = 'updated';
+            }
+        } else {
+            // No existing vote - create new one
+            TaskVote::create([
+                'task_id' => $task->id,
+                'user_id' => $userId,
+                'vote' => $validated['vote'],
+            ]);
+            $action = 'added';
+        }
+
+        // Refresh task to get updated vote counts
+        $task->load('votes');
+
+        return response()->json([
+            'success' => true,
+            'action' => $action,
+            'vote_score' => $task->vote_score,
+            'upvote_count' => $task->upvote_count,
+            'downvote_count' => $task->downvote_count,
+            'user_vote' => $task->user_vote,
+            'message' => 'Vote ' . $action . ' successfully'
+        ]);
     }
 }

@@ -53,4 +53,50 @@ class Task extends Model
     {
         return $this->belongsToMany(Label::class, 'task_labels');
     }
+
+    public function votes()
+    {
+        return $this->hasMany(TaskVote::class);
+    }
+
+    public function upvotes()
+    {
+        return $this->votes()->where('vote', 1);
+    }
+
+    public function downvotes()
+    {
+        return $this->votes()->where('vote', -1);
+    }
+
+    public function getVoteScoreAttribute()
+    {
+        return $this->votes()->sum('vote');
+    }
+
+    public function getUpvoteCountAttribute()
+    {
+        return $this->upvotes()->count();
+    }
+
+    public function getDownvoteCountAttribute()
+    {
+        return $this->downvotes()->count();
+    }
+
+    public function getUserVoteAttribute()
+    {
+        if (!auth()->check()) {
+            return null;
+        }
+        
+        $vote = $this->votes()->where('user_id', auth()->id())->first();
+        return $vote ? $vote->vote : null;
+    }
+
+    public function hasUserVoted($userId = null)
+    {
+        $userId = $userId ?? auth()->id();
+        return $this->votes()->where('user_id', $userId)->exists();
+    }
 }

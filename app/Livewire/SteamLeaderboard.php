@@ -26,6 +26,8 @@ class SteamLeaderboard extends Component
     public $imageModalVisible = false;
     public $selectedImageUrl = '';
     public $selectedImageName = '';
+    public $compactView = false;
+    public $groupByPlayer = true;
 
     protected $leaderboardService;
 
@@ -425,8 +427,41 @@ class SteamLeaderboard extends Component
         return $rankings;
     }
 
+    public function getGroupedRankings()
+    {
+        $rankings = $this->getFilteredRankings();
+        $grouped = [];
+
+        // Group by player steam_id
+        foreach ($rankings as $ranking) {
+            if (isset($ranking['world_record']) && isset($ranking['world_record']['steam_id'])) {
+                $steamId = $ranking['world_record']['steam_id'];
+                if (!isset($grouped[$steamId])) {
+                    $grouped[$steamId] = [
+                        'player' => $ranking['world_record'],
+                        'records' => []
+                    ];
+                }
+                $grouped[$steamId]['records'][] = $ranking;
+            }
+        }
+
+        // Sort by number of records (descending)
+        uasort($grouped, function($a, $b) {
+            return count($b['records']) - count($a['records']);
+        });
+
+        return $grouped;
+    }
+
+    public function toggleGrouping()
+    {
+        $this->groupByPlayer = !$this->groupByPlayer;
+    }
+
     public function render()
     {
-        return view('livewire.steam-leaderboard');
+        $view = $this->compactView ? 'livewire.steam-leaderboard-compact' : 'livewire.steam-leaderboard';
+        return view($view);
     }
 }

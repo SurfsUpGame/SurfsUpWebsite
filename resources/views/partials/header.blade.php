@@ -68,6 +68,9 @@
                                 <a href="/admin" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-200">
                                     <i class="fas fa-shield-alt mr-2"></i> Admin Panel
                                 </a>
+                                <a href="{{ route('admin.impersonate.list') }}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                                    <i class="fas fa-user-secret mr-2"></i> Impersonate Users
+                                </a>
                                 <hr class="my-1 border-gray-700">
                             @endif
                             <a href="https://bearlikelion.github.io/SurfsUpSDK/" target="_blank" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-200">
@@ -162,4 +165,24 @@
             </div>
         </nav>
     </div>
+    
+    <!-- Impersonation Banner -->
+    @if(Session::has('impersonator_id'))
+        <div class="bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-4 py-2 text-sm font-medium shadow-lg">
+            <div class="container mx-auto flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-user-secret"></i>
+                    <span>🔒 IMPERSONATING: {{ auth()->user()->name }}</span>
+                    <span class="opacity-75">| Admin View Active</span>
+                </div>
+                <form method="POST" action="{{ route('admin.impersonate.stop') }}" class="inline">
+                    @csrf
+                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-medium transition-colors duration-200">
+                        <i class="fas fa-stop mr-1"></i>
+                        Stop Impersonating
+                    </button>
+                </form>
+            </div>
+        </div>
+    @endif
 </header>
