@@ -463,10 +463,25 @@
                                      title: '{{ addslashes($task->title) }}',
                                      description: '{{ addslashes($task->description ?? '') }}',
                                      status: '{{ $task->status->getTitle() }}',
+                                     status_value: '{{ $task->status->value }}',
                                      assigned_user: '{{ $task->user ? addslashes($task->user->name) : 'Unassigned' }}',
+                                     assigned_user_id: {{ $task->user ? $task->user->id : 'null' }},
+                                     assigned_user_avatar: '{{ $task->user ? $task->user->avatar : '' }}',
+                                     assigned_user_initials: '{{ $task->user ? $task->user->initials() : 'U' }}',
                                      creator: '{{ $task->creator ? addslashes($task->creator->name) : 'Unknown' }}',
+                                     creator_avatar: '{{ $task->creator ? $task->creator->avatar : '' }}',
+                                     creator_initials: '{{ $task->creator ? $task->creator->initials() : 'U' }}',
                                      due_date: '{{ $task->due_date ? $task->due_date->format('M d, Y g:i A') : 'No due date' }}',
-                                     created_at: '{{ $task->created_at->format('M d, Y g:i A') }}'
+                                     due_date_value: '{{ $task->due_date ? $task->due_date->format('Y-m-d\TH:i') : '' }}',
+                                     created_at: '{{ $task->created_at->format('M d, Y g:i A') }}',
+                                     sprint: '{{ $task->sprint ? addslashes($task->sprint->name) : 'No sprint' }}',
+                                     sprint_id: {{ $task->sprint_id ?? 'null' }},
+                                     epic: '{{ $task->epic ? addslashes($task->epic->name) : 'No epic' }}',
+                                     epic_id: {{ $task->epic_id ?? 'null' }},
+                                     priority: '{{ ucfirst($task->priority ?? 'medium') }}',
+                                     priority_value: '{{ $task->priority ?? 'medium' }}',
+                                     labels: {{ json_encode($task->labels->pluck('name')->toArray()) }},
+                                     label_ids: {{ json_encode($task->labels->pluck('id')->toArray()) }}
                                  })">
                                 <h3 class="font-semibold mb-2">{{ $task->title }}</h3>
 
@@ -524,10 +539,25 @@
                                      title: '{{ addslashes($task->title) }}',
                                      description: '{{ addslashes($task->description ?? '') }}',
                                      status: '{{ $task->status->getTitle() }}',
+                                     status_value: '{{ $task->status->value }}',
                                      assigned_user: '{{ $task->user ? addslashes($task->user->name) : 'Unassigned' }}',
+                                     assigned_user_id: {{ $task->user ? $task->user->id : 'null' }},
+                                     assigned_user_avatar: '{{ $task->user ? $task->user->avatar : '' }}',
+                                     assigned_user_initials: '{{ $task->user ? $task->user->initials() : 'U' }}',
                                      creator: '{{ $task->creator ? addslashes($task->creator->name) : 'Unknown' }}',
+                                     creator_avatar: '{{ $task->creator ? $task->creator->avatar : '' }}',
+                                     creator_initials: '{{ $task->creator ? $task->creator->initials() : 'U' }}',
                                      due_date: '{{ $task->due_date ? $task->due_date->format('M d, Y g:i A') : 'No due date' }}',
-                                     created_at: '{{ $task->created_at->format('M d, Y g:i A') }}'
+                                     due_date_value: '{{ $task->due_date ? $task->due_date->format('Y-m-d\TH:i') : '' }}',
+                                     created_at: '{{ $task->created_at->format('M d, Y g:i A') }}',
+                                     sprint: '{{ $task->sprint ? addslashes($task->sprint->name) : 'No sprint' }}',
+                                     sprint_id: {{ $task->sprint_id ?? 'null' }},
+                                     epic: '{{ $task->epic ? addslashes($task->epic->name) : 'No epic' }}',
+                                     epic_id: {{ $task->epic_id ?? 'null' }},
+                                     priority: '{{ ucfirst($task->priority ?? 'medium') }}',
+                                     priority_value: '{{ $task->priority ?? 'medium' }}',
+                                     labels: {{ json_encode($task->labels->pluck('name')->toArray()) }},
+                                     label_ids: {{ json_encode($task->labels->pluck('id')->toArray()) }}
                                  })">
                                 <h3 class="font-semibold mb-2">{{ $task->title }}</h3>
 
