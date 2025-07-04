@@ -28,8 +28,18 @@ class TaskResource extends Resource
                 Forms\Components\TextInput::make('title')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Textarea::make('description')
-                    ->rows(3),
+                Forms\Components\RichEditor::make('description')
+                    ->toolbarButtons([
+                        'bold',
+                        'italic',
+                        'underline',
+                        'bulletList',
+                        'orderedList',
+                        'link',
+                        'undo',
+                        'redo',
+                    ])
+                    ->columnSpanFull(),
                 Forms\Components\Select::make('status')
                     ->options(TaskStatus::class)
                     ->default(TaskStatus::Todo)

@@ -26,6 +26,56 @@
         .kanban-card.dragging {
             opacity: 0.5;
         }
+
+        /* Rich text editor styles */
+        #description-editor:empty:before,
+        #edit-description-editor:empty:before {
+            content: attr(data-placeholder);
+            color: #9CA3AF;
+            pointer-events: none;
+        }
+
+        #description-editor:focus:before,
+        #edit-description-editor:focus:before {
+            display: none;
+        }
+
+        #description-editor,
+        #edit-description-editor {
+            height: 120px;
+            overflow-y: auto;
+            line-height: 1.5;
+        }
+
+        #description-editor b, #description-editor strong,
+        #edit-description-editor b, #edit-description-editor strong {
+            font-weight: bold;
+        }
+
+        #description-editor i, #description-editor em,
+        #edit-description-editor i, #edit-description-editor em {
+            font-style: italic;
+        }
+
+        #description-editor u,
+        #edit-description-editor u {
+            text-decoration: underline;
+        }
+
+        #description-editor ul, #description-editor ol,
+        #edit-description-editor ul, #edit-description-editor ol {
+            margin-left: 20px;
+        }
+
+        #description-editor ul,
+        #edit-description-editor ul {
+            list-style-type: disc;
+        }
+
+        #description-editor ol,
+        #edit-description-editor ol {
+            list-style-type: decimal;
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white antialiased min-h-screen flex flex-col" style="background-image: url('{{ asset('img/surfsup-hero.png') }}'); background-size: cover; background-position: center; background-attachment: fixed;" x-data="roadmapData()" x-init="console.log('Alpine.js loaded on body')">
@@ -161,13 +211,13 @@
                                                 @auth
                                                     <div class="flex items-center justify-between mb-2">
                                                         <div class="flex items-center space-x-2">
-                                                            <button onclick="vote({{ $task->id }}, 1, event)" 
+                                                            <button onclick="vote({{ $task->id }}, 1, event)"
                                                                     class="vote-btn upvote flex items-center space-x-1 px-2 py-1 rounded text-xs transition-colors
                                                                            {{ $task->user_vote === 1 ? 'bg-green-600 text-white' : 'bg-gray-600 text-gray-300 hover:bg-green-600 hover:text-white' }}">
                                                                 <i class="fas fa-thumbs-up"></i>
                                                                 <span class="upvote-count">{{ $task->upvote_count }}</span>
                                                             </button>
-                                                            <button onclick="vote({{ $task->id }}, -1, event)" 
+                                                            <button onclick="vote({{ $task->id }}, -1, event)"
                                                                     class="vote-btn downvote flex items-center space-x-1 px-2 py-1 rounded text-xs transition-colors
                                                                            {{ $task->user_vote === -1 ? 'bg-red-600 text-white' : 'bg-gray-600 text-gray-300 hover:bg-red-600 hover:text-white' }}">
                                                                 <i class="fas fa-thumbs-down"></i>
@@ -328,13 +378,13 @@
                                                 @auth
                                                     <div class="flex items-center justify-between mb-2">
                                                         <div class="flex items-center space-x-2">
-                                                            <button onclick="vote({{ $task->id }}, 1, event)" 
+                                                            <button onclick="vote({{ $task->id }}, 1, event)"
                                                                     class="vote-btn upvote flex items-center space-x-1 px-2 py-1 rounded text-xs transition-colors
                                                                            {{ $task->user_vote === 1 ? 'bg-green-600 text-white' : 'bg-gray-600 text-gray-300 hover:bg-green-600 hover:text-white' }}">
                                                                 <i class="fas fa-thumbs-up"></i>
                                                                 <span class="upvote-count">{{ $task->upvote_count }}</span>
                                                             </button>
-                                                            <button onclick="vote({{ $task->id }}, -1, event)" 
+                                                            <button onclick="vote({{ $task->id }}, -1, event)"
                                                                     class="vote-btn downvote flex items-center space-x-1 px-2 py-1 rounded text-xs transition-colors
                                                                            {{ $task->user_vote === -1 ? 'bg-red-600 text-white' : 'bg-gray-600 text-gray-300 hover:bg-red-600 hover:text-white' }}">
                                                                 <i class="fas fa-thumbs-down"></i>
@@ -536,7 +586,7 @@
                  x-transition:leave-end="opacity-0"
                  @click.away="showCreateModal = false"
                  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                <div @click.stop class="bg-gray-800 rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                <div @click.stop class="bg-gray-800 rounded-lg p-6 max-w-6xl w-full max-h-[95vh] overflow-y-auto">
                     <h2 class="text-2xl font-bold mb-4">Create New Task</h2>
 
                     <form action="{{ route('roadmap.store') }}" method="POST">
@@ -565,10 +615,34 @@
 
                         <div class="mb-6">
                             <label for="description" class="block text-sm font-medium mb-2">Description</label>
-                            <textarea name="description"
-                                      id="description"
-                                      rows="4"
-                                      class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">{{ old('description') }}</textarea>
+                            <div class="rich-text-editor">
+                                <!-- Toolbar -->
+                                <div class="bg-gray-600 border border-gray-600 border-b-0 rounded-t-md px-3 py-2 flex space-x-2">
+                                    <button type="button" onclick="formatText('bold')" class="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-500 rounded text-white font-bold" title="Bold">
+                                        <i class="fas fa-bold"></i>
+                                    </button>
+                                    <button type="button" onclick="formatText('italic')" class="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-500 rounded text-white italic" title="Italic">
+                                        <i class="fas fa-italic"></i>
+                                    </button>
+                                    <button type="button" onclick="formatText('underline')" class="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-500 rounded text-white underline" title="Underline">
+                                        <i class="fas fa-underline"></i>
+                                    </button>
+                                    <button type="button" onclick="formatText('insertUnorderedList')" class="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-500 rounded text-white" title="Bullet List">
+                                        <i class="fas fa-list-ul"></i>
+                                    </button>
+                                    <button type="button" onclick="formatText('insertOrderedList')" class="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-500 rounded text-white" title="Numbered List">
+                                        <i class="fas fa-list-ol"></i>
+                                    </button>
+                                </div>
+                                <!-- Editor -->
+                                <div id="description-editor"
+                                     contenteditable="true"
+                                     class="w-full px-3 py-2 bg-gray-700 border border-gray-600 border-t-0 rounded-b-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[450px]"
+                                     data-placeholder="Enter task description..."
+                                     oninput="updateHiddenField()">{{ old('description') }}</div>
+                                <!-- Hidden field for form submission -->
+                                <textarea name="description" id="description" style="display: none;">{{ old('description') }}</textarea>
+                            </div>
                         </div>
 
                         <!-- Two Column Layout -->
@@ -728,10 +802,36 @@
 
                             <div class="mb-6">
                                 <label for="edit_description" class="block text-sm font-medium mb-2">Description</label>
-                                <textarea id="edit_description"
-                                          x-model="selectedTask.description"
-                                          rows="4"
-                                          class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                                <div class="rich-text-editor">
+                                    <!-- Toolbar -->
+                                    <div class="bg-gray-600 border border-gray-600 border-b-0 rounded-t-md px-3 py-2 flex space-x-2">
+                                        <button type="button" onclick="formatEditText('bold')" class="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-500 rounded text-white font-bold" title="Bold">
+                                            <i class="fas fa-bold"></i>
+                                        </button>
+                                        <button type="button" onclick="formatEditText('italic')" class="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-500 rounded text-white italic" title="Italic">
+                                            <i class="fas fa-italic"></i>
+                                        </button>
+                                        <button type="button" onclick="formatEditText('underline')" class="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-500 rounded text-white underline" title="Underline">
+                                            <i class="fas fa-underline"></i>
+                                        </button>
+                                        <button type="button" onclick="formatEditText('insertUnorderedList')" class="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-500 rounded text-white" title="Bullet List">
+                                            <i class="fas fa-list-ul"></i>
+                                        </button>
+                                        <button type="button" onclick="formatEditText('insertOrderedList')" class="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-500 rounded text-white" title="Numbered List">
+                                            <i class="fas fa-list-ol"></i>
+                                        </button>
+                                    </div>
+                                    <!-- Editor -->
+                                    <div id="edit-description-editor"
+                                         contenteditable="true"
+                                         class="w-full px-3 py-2 bg-gray-700 border border-gray-600 border-t-0 rounded-b-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[450px]"
+                                         data-placeholder="Enter task description..."
+                                         oninput="updateEditHiddenField()"
+                                         x-text="selectedTask ? selectedTask.description : ''"
+                                         @click="initEditDescriptionContent()"></div>
+                                    <!-- Hidden field for form submission -->
+                                    <textarea id="edit_description" x-model="selectedTask.description" style="display: none;"></textarea>
+                                </div>
                             </div>
 
                             <!-- Two Column Layout -->
@@ -1165,6 +1265,69 @@
             };
         }
 
+        // Rich text editor functions
+        function formatText(command) {
+            document.execCommand(command, false, null);
+            updateHiddenField();
+        }
+
+        function updateHiddenField() {
+            const editor = document.getElementById('description-editor');
+            const hiddenField = document.getElementById('description');
+            hiddenField.value = editor.innerHTML;
+        }
+
+        // Rich text editor functions for edit modal
+        function formatEditText(command) {
+            document.execCommand(command, false, null);
+            updateEditHiddenField();
+        }
+
+        function updateEditHiddenField() {
+            const editor = document.getElementById('edit-description-editor');
+            const hiddenField = document.getElementById('edit_description');
+            if (editor && hiddenField) {
+                hiddenField.value = editor.innerHTML;
+                // Update Alpine.js model
+                const selectedTaskData = window.Alpine.store ? window.Alpine.store('selectedTask') : null;
+                if (selectedTaskData) {
+                    selectedTaskData.description = editor.innerHTML;
+                }
+            }
+        }
+
+        function initEditDescriptionContent() {
+            const editor = document.getElementById('edit-description-editor');
+            const hiddenField = document.getElementById('edit_description');
+            if (editor && hiddenField && hiddenField.value) {
+                editor.innerHTML = hiddenField.value;
+            }
+        }
+
+        // Initialize rich text editor content
+        document.addEventListener('DOMContentLoaded', function() {
+            const editor = document.getElementById('description-editor');
+            const hiddenField = document.getElementById('description');
+
+            // Set initial content if there's old input
+            if (hiddenField.value) {
+                editor.innerHTML = hiddenField.value;
+            }
+
+            // Add placeholder behavior
+            editor.addEventListener('focus', function() {
+                if (this.innerHTML === '' || this.innerHTML === '<br>') {
+                    this.innerHTML = '';
+                }
+            });
+
+            editor.addEventListener('blur', function() {
+                if (this.innerHTML === '' || this.innerHTML === '<br>') {
+                    this.innerHTML = '';
+                }
+            });
+        });
+
         // Simple drag and drop functionality
         let draggedElement = null;
 
@@ -1274,7 +1437,7 @@
         // Voting function
         function vote(taskId, voteValue, event) {
             event.stopPropagation(); // Prevent opening task details modal
-            
+
             fetch(`/roadmap/task/${taskId}/vote`, {
                 method: 'POST',
                 headers: {
@@ -1290,40 +1453,40 @@
                 if (data.success) {
                     // Find the task card and update vote counts
                     const taskCard = event.target.closest('.kanban-card');
-                    
+
                     // Update upvote count
                     const upvoteCount = taskCard.querySelector('.upvote-count');
                     if (upvoteCount) {
                         upvoteCount.textContent = data.upvote_count;
                     }
-                    
+
                     // Update downvote count
                     const downvoteCount = taskCard.querySelector('.downvote-count');
                     if (downvoteCount) {
                         downvoteCount.textContent = data.downvote_count;
                     }
-                    
+
                     // Update vote score
                     const voteScore = taskCard.querySelector('.vote-score');
                     if (voteScore) {
                         voteScore.textContent = data.vote_score;
                     }
-                    
+
                     // Update button states
                     const upvoteBtn = taskCard.querySelector('.upvote');
                     const downvoteBtn = taskCard.querySelector('.downvote');
-                    
+
                     // Reset button classes
                     upvoteBtn.className = upvoteBtn.className.replace(/(bg-green-600|text-white)/g, '').replace(/\s+/g, ' ').trim();
                     downvoteBtn.className = downvoteBtn.className.replace(/(bg-red-600|text-white)/g, '').replace(/\s+/g, ' ').trim();
-                    
+
                     if (!upvoteBtn.className.includes('bg-gray-600')) {
                         upvoteBtn.className += ' bg-gray-600 text-gray-300 hover:bg-green-600 hover:text-white';
                     }
                     if (!downvoteBtn.className.includes('bg-gray-600')) {
                         downvoteBtn.className += ' bg-gray-600 text-gray-300 hover:bg-red-600 hover:text-white';
                     }
-                    
+
                     // Apply active state based on user's current vote
                     if (data.user_vote === 1) {
                         upvoteBtn.className = upvoteBtn.className.replace(/(bg-gray-600|text-gray-300|hover:bg-green-600|hover:text-white)/g, '').replace(/\s+/g, ' ').trim();
@@ -1332,7 +1495,7 @@
                         downvoteBtn.className = downvoteBtn.className.replace(/(bg-gray-600|text-gray-300|hover:bg-red-600|hover:text-white)/g, '').replace(/\s+/g, ' ').trim();
                         downvoteBtn.className += ' bg-red-600 text-white';
                     }
-                    
+
                     console.log('Vote registered successfully');
                 } else {
                     alert('Failed to register vote: ' + (data.message || 'Unknown error'));
