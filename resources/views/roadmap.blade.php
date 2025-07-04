@@ -21,8 +21,15 @@
             min-width: 280px;
         }
         .kanban-card {
-            cursor: move;
+            cursor: pointer;
         }
+        @auth
+            @if(auth()->user()->hasRole(['admin', 'staff']))
+                .kanban-card[draggable="true"] {
+                    cursor: move;
+                }
+            @endif
+        @endauth
         .kanban-card.dragging {
             opacity: 0.5;
         }
@@ -90,50 +97,123 @@
 
         <div class="flex items-center justify-between mt-16 mb-8">
             <h1 class="text-4xl font-bold text-center flex-1 text-gray-800">Development Roadmap</h1>
-            @auth
-                @if(auth()->user()->hasRole(['admin', 'staff']))
-                    <button @click="showCreateModal = true" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md text-white font-medium transition-colors duration-200 flex items-center space-x-2">
-                        <i class="fas fa-plus"></i>
-                        <span>Add Task</span>
-                    </button>
-                @endif
-            @endauth
+            <div class="flex items-center space-x-4">
+                <!-- Toggle between active and past sprints -->
+                <div class="flex items-center bg-gray-200 rounded-lg p-1">
+                    <a href="{{ route('roadmap') }}" class="px-3 py-1 rounded-md text-sm font-medium transition-colors duration-200 {{ !$showPast ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900' }}">
+                        Active Sprints
+                    </a>
+                    <a href="{{ route('roadmap', ['show_past' => true]) }}" class="px-3 py-1 rounded-md text-sm font-medium transition-colors duration-200 {{ $showPast ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900' }}">
+                        Past Sprints
+                    </a>
+                </div>
+
+                @auth
+                    @if(auth()->user()->hasRole(['admin', 'staff']) && !$showPast)
+                        <button @click="showCreateModal = true" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md text-white font-medium transition-colors duration-200 flex items-center space-x-2">
+                            <i class="fas fa-plus"></i>
+                            <span>Add Task</span>
+                        </button>
+                    @endif
+                @endauth
+            </div>
         </div>
 
         <!-- Sprint-based Kanban Boards -->
         @foreach($sprints as $sprint)
-            <div class="mb-12">
-                <div class="flex items-center justify-between mb-6">
-                    <div>
-                        <h2 class="text-3xl font-bold text-gray-800">{{ $sprint->name }}</h2>
-                        @if($sprint->description)
-                            <p class="text-gray-600 mt-1">{{ $sprint->description }}</p>
-                        @endif
-                        <div class="flex items-center space-x-4 mt-2 text-sm text-gray-600">
-                            @if($sprint->start_date)
-                                <span><i class="fas fa-play mr-1"></i>{{ $sprint->start_date->format('M d, Y') }}</span>
+            @if(!$showPast)
+                <!-- Active Sprint Header - Full width above columns -->
+                <div class="mb-8 rounded-lg p-6">
+                    <div class="flex items-center justify-between w-full">
+                        <div class="flex-1">
+                            <h2 class="text-3xl font-bold text-gray-800">{{ $sprint->name }}</h2>
+                            @if($sprint->description)
+                                <p class="text-gray-600 mt-1">{{ $sprint->description }}</p>
                             @endif
-                            @if($sprint->end_date)
-                                <span><i class="fas fa-flag-checkered mr-1"></i>{{ $sprint->end_date->format('M d, Y') }}</span>
-                            @endif
-                            @if($sprint->is_active)
-                                <span class="bg-green-600 px-2 py-1 rounded text-white text-xs">Active</span>
-                            @endif
+                            <div class="flex items-center space-x-4 mt-2 text-sm text-gray-600">
+                                @if($sprint->start_date)
+                                    <span><i class="fas fa-play mr-1"></i>{{ $sprint->start_date->format('M d, Y') }}</span>
+                                @endif
+                                @if($sprint->end_date)
+                                    <span><i class="fas fa-flag-checkered mr-1"></i>{{ $sprint->end_date->format('M d, Y') }}</span>
+                                @endif
+                                @if($sprint->is_active)
+                                    <span class="bg-green-600 px-2 py-1 rounded text-white text-xs">Active</span>
+                                @else
+                                    <span class="bg-gray-600 px-2 py-1 rounded text-white text-xs">Completed</span>
+                                @endif
+                            </div>
                         </div>
+                        @auth
+                            @if(auth()->user()->hasRole(['admin']) && $sprint->is_active)
+                                <div class="flex-shrink-0">
+                                    <button @click="endSprint({{ $sprint->id }})" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md text-white font-medium transition-colors duration-200 flex items-center space-x-2">
+                                        <i class="fas fa-stop"></i>
+                                        <span>End Sprint</span>
+                                    </button>
+                                </div>
+                            @endif
+                        @endauth
                     </div>
                 </div>
+            @endif
 
-                <div class="flex overflow-x-auto gap-6 pb-4">
-                    @foreach($statuses as $status)
-                        @if(!in_array($status->value, ['backlog', 'ideas']))
-                            @php
-                                $sprintTasks = ($tasksByStatus[$status->value] ?? collect())->where('sprint_id', $sprint->id);
-                            @endphp
-                            <div class="kanban-column">
-                                <div class="bg-gray-800 rounded-lg p-4">
-                                    <h3 class="text-xl font-semibold mb-4 text-{{ $status->getColor() }}-400">
-                                        {{ $status->getTitle() }} ({{ $sprintTasks->count() }})
-                                    </h3>
+            <div class="mb-12" @if($showPast) x-data="{ expanded: false }" @endif>
+                @if($showPast)
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center space-x-4">
+                            <button @click="expanded = !expanded" class="text-gray-600 hover:text-gray-800 transition-colors">
+                                <i class="fas fa-chevron-right transform transition-transform duration-200" :class="{'rotate-90': expanded}"></i>
+                            </button>
+                            <div>
+                                <h2 class="text-3xl font-bold text-gray-800 cursor-pointer" @click="expanded = !expanded">{{ $sprint->name }}</h2>
+                            @if($sprint->description)
+                                <p class="text-gray-600 mt-1">{{ $sprint->description }}</p>
+                            @endif
+                            <div class="flex items-center space-x-4 mt-2 text-sm text-gray-600">
+                                @if($sprint->start_date)
+                                    <span><i class="fas fa-play mr-1"></i>{{ $sprint->start_date->format('M d, Y') }}</span>
+                                @endif
+                                @if($sprint->end_date)
+                                    <span><i class="fas fa-flag-checkered mr-1"></i>{{ $sprint->end_date->format('M d, Y') }}</span>
+                                @endif
+                                @if($sprint->is_active)
+                                    <span class="bg-green-600 px-2 py-1 rounded text-white text-xs">Active</span>
+                                @else
+                                    <span class="bg-gray-600 px-2 py-1 rounded text-white text-xs">Completed</span>
+                                @endif
+                            </div>
+                        </div>
+                        @auth
+                            @if(auth()->user()->hasRole(['admin']) && $sprint->is_active)
+                                <button @click="endSprint({{ $sprint->id }})" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-md text-white font-medium transition-colors duration-200 flex items-center space-x-2">
+                                    <i class="fas fa-stop"></i>
+                                    <span>End Sprint</span>
+                                </button>
+                            @endif
+                        @endauth
+                    </div>
+                @endif
+
+                @if($showPast)
+                    <div x-show="expanded" x-transition:enter="transition-all ease-out duration-300" x-transition:enter-start="opacity-0 max-h-0" x-transition:enter-end="opacity-100 max-h-screen" x-transition:leave="transition-all ease-in duration-300" x-transition:leave-start="opacity-100 max-h-screen" x-transition:leave-end="opacity-0 max-h-0" class="overflow-hidden">
+                        <div class="flex overflow-x-auto gap-6 pb-4">
+                @else
+                    <div class="flex overflow-x-auto gap-6 pb-4">
+                @endif
+                        @foreach($statuses as $status)
+                            @if(!in_array($status->value, ['backlog', 'ideas']))
+                                @if($showPast && $status->value !== 'done')
+                                    @continue
+                                @endif
+                                @php
+                                    $sprintTasks = ($tasksByStatus[$status->value] ?? collect())->where('sprint_id', $sprint->id);
+                                @endphp
+                                <div class="kanban-column">
+                                    <div class="bg-gray-800 rounded-lg p-4">
+                                        <h3 class="text-xl font-semibold mb-4 text-{{ $status->getColor() }}-400">
+                                            {{ $status->getTitle() }} ({{ $sprintTasks->count() }})
+                                        </h3>
 
                                     <div class="space-y-3" id="column-{{ $status->value }}-sprint-{{ $sprint->id }}" data-status="{{ $status->value }}" data-sprint="{{ $sprint->id }}">
                                         @foreach($sprintTasks as $task)
@@ -274,6 +354,7 @@
                             </div>
                         @endif
                     @endforeach
+                    </div>
                 </div>
             </div>
         @endforeach
@@ -445,8 +526,9 @@
             </div>
         @endif
 
-        <!-- Backlog and Ideas Sections Side by Side -->
-        <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Backlog and Ideas Sections Side by Side (only shown for active sprints) -->
+        @if(!$showPast)
+            <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
             <!-- Backlog Section -->
             <div>
                 <h2 class="text-2xl font-bold mb-4 text-gray-800">
@@ -488,6 +570,45 @@
                                 @if($task->description)
                                     <p class="text-sm text-gray-300 mb-2">{{ Str::limit($task->description, 120) }}</p>
                                 @endif
+
+                                <!-- Voting buttons -->
+                                @auth
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center space-x-2">
+                                            <button onclick="vote({{ $task->id }}, 1, event)"
+                                                    class="vote-btn upvote flex items-center space-x-1 px-2 py-1 rounded text-xs transition-colors
+                                                           {{ $task->user_vote === 1 ? 'bg-green-600 text-white' : 'bg-gray-600 text-gray-300 hover:bg-green-600 hover:text-white' }}">
+                                                <i class="fas fa-thumbs-up"></i>
+                                                <span class="upvote-count">{{ $task->upvote_count }}</span>
+                                            </button>
+                                            <button onclick="vote({{ $task->id }}, -1, event)"
+                                                    class="vote-btn downvote flex items-center space-x-1 px-2 py-1 rounded text-xs transition-colors
+                                                           {{ $task->user_vote === -1 ? 'bg-red-600 text-white' : 'bg-gray-600 text-gray-300 hover:bg-red-600 hover:text-white' }}">
+                                                <i class="fas fa-thumbs-down"></i>
+                                                <span class="downvote-count">{{ $task->downvote_count }}</span>
+                                            </button>
+                                        </div>
+                                        <div class="text-xs text-gray-400">
+                                            Score: <span class="vote-score font-semibold text-white">{{ $task->vote_score }}</span>
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center space-x-2">
+                                            <div class="flex items-center space-x-1 px-2 py-1 rounded text-xs bg-gray-600 text-gray-300">
+                                                <i class="fas fa-thumbs-up"></i>
+                                                <span>{{ $task->upvote_count }}</span>
+                                            </div>
+                                            <div class="flex items-center space-x-1 px-2 py-1 rounded text-xs bg-gray-600 text-gray-300">
+                                                <i class="fas fa-thumbs-down"></i>
+                                                <span>{{ $task->downvote_count }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="text-xs text-gray-400">
+                                            Score: <span class="font-semibold text-white">{{ $task->vote_score }}</span>
+                                        </div>
+                                    </div>
+                                @endauth
 
                                 <div class="flex items-center justify-between text-xs text-gray-400">
                                     @if($task->user)
@@ -565,6 +686,45 @@
                                     <p class="text-sm text-gray-300 mb-2">{{ Str::limit($task->description, 120) }}</p>
                                 @endif
 
+                                <!-- Voting buttons -->
+                                @auth
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center space-x-2">
+                                            <button onclick="vote({{ $task->id }}, 1, event)"
+                                                    class="vote-btn upvote flex items-center space-x-1 px-2 py-1 rounded text-xs transition-colors
+                                                           {{ $task->user_vote === 1 ? 'bg-green-600 text-white' : 'bg-gray-600 text-gray-300 hover:bg-green-600 hover:text-white' }}">
+                                                <i class="fas fa-thumbs-up"></i>
+                                                <span class="upvote-count">{{ $task->upvote_count }}</span>
+                                            </button>
+                                            <button onclick="vote({{ $task->id }}, -1, event)"
+                                                    class="vote-btn downvote flex items-center space-x-1 px-2 py-1 rounded text-xs transition-colors
+                                                           {{ $task->user_vote === -1 ? 'bg-red-600 text-white' : 'bg-gray-600 text-gray-300 hover:bg-red-600 hover:text-white' }}">
+                                                <i class="fas fa-thumbs-down"></i>
+                                                <span class="downvote-count">{{ $task->downvote_count }}</span>
+                                            </button>
+                                        </div>
+                                        <div class="text-xs text-gray-400">
+                                            Score: <span class="vote-score font-semibold text-white">{{ $task->vote_score }}</span>
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center space-x-2">
+                                            <div class="flex items-center space-x-1 px-2 py-1 rounded text-xs bg-gray-600 text-gray-300">
+                                                <i class="fas fa-thumbs-up"></i>
+                                                <span>{{ $task->upvote_count }}</span>
+                                            </div>
+                                            <div class="flex items-center space-x-1 px-2 py-1 rounded text-xs bg-gray-600 text-gray-300">
+                                                <i class="fas fa-thumbs-down"></i>
+                                                <span>{{ $task->downvote_count }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="text-xs text-gray-400">
+                                            Score: <span class="font-semibold text-white">{{ $task->vote_score }}</span>
+                                        </div>
+                                    </div>
+                                @endauth
+
                                 <div class="flex items-center justify-between text-xs text-gray-400">
                                     @if($task->user)
                                         <div class="flex items-center space-x-2">
@@ -598,7 +758,8 @@
                     @endif
                 </div>
             </div>
-        </div>
+            </div>
+        @endif
 
     </main>
 
@@ -1055,6 +1216,50 @@
                                 </div>
                             </div>
 
+                            <!-- Voting Section -->
+                            @auth
+                                <div>
+                                    <h3 class="text-sm font-semibold text-gray-300 mb-2">Community Feedback</h3>
+                                    <div class="flex items-center justify-between bg-gray-700 p-3 rounded-md">
+                                        <div class="flex items-center space-x-2">
+                                            <button :onclick="`vote(${selectedTask.id}, 1, event)`"
+                                                    class="vote-btn upvote flex items-center space-x-1 px-3 py-2 rounded text-sm transition-colors bg-gray-600 text-gray-300 hover:bg-green-600 hover:text-white">
+                                                <i class="fas fa-thumbs-up"></i>
+                                                <span class="upvote-count" x-text="selectedTask ? selectedTask.upvote_count || 0 : 0"></span>
+                                            </button>
+                                            <button :onclick="`vote(${selectedTask.id}, -1, event)`"
+                                                    class="vote-btn downvote flex items-center space-x-1 px-3 py-2 rounded text-sm transition-colors bg-gray-600 text-gray-300 hover:bg-red-600 hover:text-white">
+                                                <i class="fas fa-thumbs-down"></i>
+                                                <span class="downvote-count" x-text="selectedTask ? selectedTask.downvote_count || 0 : 0"></span>
+                                            </button>
+                                        </div>
+                                        <div class="text-sm text-gray-400">
+                                            Score: <span class="vote-score font-semibold text-white" x-text="selectedTask ? selectedTask.vote_score || 0 : 0"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            @else
+                                <div>
+                                    <h3 class="text-sm font-semibold text-gray-300 mb-2">Community Feedback</h3>
+                                    <div class="flex items-center justify-between bg-gray-700 p-3 rounded-md">
+                                        <div class="flex items-center space-x-2">
+                                            <div class="flex items-center space-x-1 px-3 py-2 rounded text-sm bg-gray-600 text-gray-300">
+                                                <i class="fas fa-thumbs-up"></i>
+                                                <span x-text="selectedTask ? selectedTask.upvote_count || 0 : 0"></span>
+                                            </div>
+                                            <div class="flex items-center space-x-1 px-3 py-2 rounded text-sm bg-gray-600 text-gray-300">
+                                                <i class="fas fa-thumbs-down"></i>
+                                                <span x-text="selectedTask ? selectedTask.downvote_count || 0 : 0"></span>
+                                            </div>
+                                        </div>
+                                        <div class="text-sm text-gray-400">
+                                            Score: <span class="font-semibold text-white" x-text="selectedTask ? selectedTask.vote_score || 0 : 0"></span>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-2">Login to vote on this task</p>
+                                </div>
+                            @endauth
+
                             <div>
                                 <h3 class="text-sm font-semibold text-gray-300 mb-2">Task Information</h3>
                                 <div class="text-xs text-gray-400 space-y-1 bg-gray-700 p-3 rounded-md">
@@ -1291,6 +1496,30 @@
                         console.error('Error updating task:', error);
                         alert('Error updating task');
                     });
+                },
+                endSprint(sprintId) {
+                    if (confirm('Are you sure you want to end this sprint? This will:\n\n• Mark the sprint as inactive\n• Move all To-Do tasks to the backlog\n• Archive all Done tasks\n• Move In-Progress and Review tasks to the next sprint (or backlog if no next sprint available)\n\nThis action cannot be undone.')) {
+                        fetch(`/roadmap/sprint/${sprintId}/end`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert(data.message || 'Sprint ended successfully!');
+                                location.reload();
+                            } else {
+                                alert('Failed to end sprint: ' + (data.message || 'Unknown error'));
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error ending sprint:', error);
+                            alert('Error ending sprint');
+                        });
+                    }
                 }
             };
         }
