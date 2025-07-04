@@ -196,10 +196,17 @@
                     </div>
                 @else
                     <div class="text-center py-8">
-                        <div class="flex justify-center items-center gap-3">
-                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
-                            <span class="text-gray-400">Fetching latest world records</span>
-                        </div>
+                        @if($this->isLoadingAnyWorldRecords())
+                            <div class="flex justify-center items-center gap-3">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+                                <span class="text-gray-400">Fetching latest world records</span>
+                            </div>
+                        @else
+                            <button wire:click="$set('showOnlyWithScores', false)" 
+                                    class="text-blue-400 hover:text-blue-300 text-sm transition">
+                                Show all {{ count($rankings) }} maps
+                            </button>
+                        @endif
                     </div>
                 @endif
             @else

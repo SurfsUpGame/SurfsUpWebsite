@@ -163,7 +163,14 @@
                 </div>
             @endif
             
-            @if(count($this->getFilteredRankings()) < count($rankings))
+            @if($this->isLoadingAnyWorldRecords())
+                <div class="mt-4 text-center">
+                    <div class="flex items-center justify-center gap-2">
+                        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500"></div>
+                        <span class="text-gray-400 text-sm">Loading world records...</span>
+                    </div>
+                </div>
+            @elseif(count($this->getFilteredRankings()) < count($rankings))
                 <div class="mt-4 text-center">
                     <button wire:click="$set('showOnlyWithScores', false)" 
                             class="text-blue-400 hover:text-blue-300 text-sm transition">

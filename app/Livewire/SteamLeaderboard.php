@@ -458,6 +458,15 @@ class SteamLeaderboard extends Component
     {
         $this->groupByPlayer = !$this->groupByPlayer;
     }
+    
+    public function isLoadingAnyWorldRecords()
+    {
+        if (empty($this->worldRecordsLoading)) {
+            return false;
+        }
+        
+        return in_array(true, $this->worldRecordsLoading, true);
+    }
 
     public function render()
     {
