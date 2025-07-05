@@ -82,12 +82,12 @@
                                             <div class="flex items-center gap-1 bg-gray-800 rounded-full">
                                                 <button wire:click="viewTop10('{{ $record['name'] }}')"
                                                         class="text-blue-400 hover:text-blue-300 text-xs bg-gray-900/50 px-2 py-1 rounded" title="Top 10">
-                                                    <i class="fas fa-list"></i>
+                                                    <i class="fas fa-list"></i> Top 10
                                                 </button>
                                                 @auth
                                                 <button wire:click="viewAroundMe('{{ $record['name'] }}')"
                                                         class="text-green-400 hover:text-green-300 text-xs bg-gray-900/50 px-2 py-1 rounded" title="Around Me">
-                                                    <i class="fas fa-user-circle"></i>
+                                                    <i class="fas fa-user-circle"></i> Around Me
                                                 </button>
                                                 @endauth
                                             </div>

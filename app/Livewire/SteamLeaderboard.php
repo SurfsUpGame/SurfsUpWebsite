@@ -29,13 +29,17 @@ class SteamLeaderboard extends Component
     public $compactView = false;
     public $groupByPlayer = true;
     public $isExpanded = true;
+    protected $hasDispatchedLoadWorldRecords = false;
 
     protected $leaderboardService;
 
     public function mount() : void
     {
         $this->loadLeaderboardsOnly();
-        $this->dispatch('loadWorldRecordsAsync');
+        if (!$this->hasDispatchedLoadWorldRecords) {
+            $this->dispatch('loadWorldRecordsAsync')->self();
+            $this->hasDispatchedLoadWorldRecords = true;
+        }
     }
 
     public function loadLeaderboardsOnly(): void
