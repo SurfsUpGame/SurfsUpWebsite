@@ -28,6 +28,7 @@ class SteamLeaderboard extends Component
     public $selectedImageName = '';
     public $compactView = false;
     public $groupByPlayer = true;
+    public $isExpanded = true;
 
     protected $leaderboardService;
 
@@ -457,6 +458,11 @@ class SteamLeaderboard extends Component
     public function toggleGrouping()
     {
         $this->groupByPlayer = !$this->groupByPlayer;
+    }
+    
+    public function toggleExpanded()
+    {
+        $this->isExpanded = !$this->isExpanded;
     }
     
     public function isLoadingAnyWorldRecords()

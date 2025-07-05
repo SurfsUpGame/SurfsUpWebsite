@@ -1,9 +1,10 @@
 <div class="bg-gray-800 rounded-lg p-6">
     <div class="flex items-center justify-between mb-6">
-        <h3 class="text-2xl font-bold text-white flex items-center gap-2">
+        <button wire:click="toggleExpanded" class="flex items-center gap-2 text-2xl font-bold text-white hover:text-yellow-400 transition-colors">
             <i class="fa-solid fa-trophy text-yellow-500"></i>
             SurfsUp World Records
-        </h3>
+            <i class="fas fa-chevron-down text-lg transition-transform duration-200 @if(!$isExpanded) rotate-180 @endif"></i>
+        </button>
         <div class="flex items-center gap-4">
             <button wire:click="toggleGrouping" 
                     class="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition">
@@ -27,6 +28,8 @@
         </div>
     </div>
 
+    @if($isExpanded)
+    <div>
     @if($loading)
         <div class="flex justify-center items-center py-8">
             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
@@ -184,6 +187,8 @@
                 <p class="text-gray-500 text-sm">This could be due to Steam API configuration issues or no leaderboards being set up for this game.</p>
             </div>
         @endif
+    @endif
+    </div>
     @endif
 
     <!-- Modals remain the same -->
