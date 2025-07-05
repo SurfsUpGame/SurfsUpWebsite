@@ -50,8 +50,12 @@
 
 @include('partials.live-streams')
 
-<section class="bg-gradient-to-b from-gray-900 to-gray-800 pt-24 pb-16">
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+<section class="relative bg-gradient-to-b from-gray-900 to-gray-800 pt-24 pb-16">
+    <div class="absolute inset-0 z-0">
+        <img src="/img/surfsup-hero.png" alt="SurfsUp Hero" class="w-full h-full object-cover opacity-20">
+        <div class="absolute inset-0 bg-gradient-to-b from-gray-900/70 to-gray-800"></div>
+    </div>
+    <div class="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
         @livewire('steam-leaderboard', ['compactView' => true])
     </div>
 </section>
