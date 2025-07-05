@@ -80,12 +80,9 @@
                                 <i class="fas fa-trophy mr-2"></i> View My Leaderboard
                             </a>
                             <hr class="my-1 border-gray-700">
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-200">
-                                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
-                                </button>
-                            </form>
+                            <a href="/logout" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                            </a>
                         </div>
                     </div>
                 @else
@@ -148,12 +145,9 @@
                         <a href="/leaderboard/{{ auth()->user()->steam_id }}" class="block px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors duration-200">
                             <i class="fas fa-trophy mr-2"></i> View My Leaderboard
                         </a>
-                        <form method="POST" action="{{ route('logout') }}" class="mt-2">
-                            @csrf
-                            <button type="submit" class="w-full text-left px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors duration-200">
-                                <i class="fas fa-sign-out-alt mr-2"></i> Logout
-                            </button>
-                        </form>
+                        <a href="/logout" class="block px-3 py-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-md transition-colors duration-200">
+                            <i class="fas fa-sign-out-alt mr-2"></i> Logout
+                        </a>
                     </div>
                 @else
                     <div class="px-3 py-2">

@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 use Livewire\Volt\Volt;
 
 
@@ -37,6 +39,8 @@ Route::post('logout', App\Livewire\Actions\Logout::class)
 
 // Handle accidental GET requests to logout
 Route::get('logout', function () {
-    auth()->logout();
-    return redirect()->route('home');
+    Auth::guard('web')->logout();
+    Session::invalidate();
+    Session::regenerateToken();
+    return redirect('/');
 });

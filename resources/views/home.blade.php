@@ -10,6 +10,7 @@
     <link rel="icon" type="image/x-icon" href="{{ asset('/img/favicon.ico') }}">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
 
     <script src="https://kit.fontawesome.com/d251d3e9b0.js" crossorigin="anonymous"></script>
     <script src="//unpkg.com/alpinejs" defer></script>
@@ -38,5 +39,7 @@
     </main>
 
     @include('partials.footer')
+    
+    @livewireScripts
 </body>
 </html>

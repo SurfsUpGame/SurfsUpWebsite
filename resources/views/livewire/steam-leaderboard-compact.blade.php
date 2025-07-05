@@ -6,7 +6,7 @@
             <i class="fas fa-chevron-down text-lg transition-transform duration-200 @if(!$isExpanded) rotate-180 @endif"></i>
         </button>
         <div class="flex items-center gap-4">
-            <button wire:click="toggleGrouping" 
+            <button wire:click="toggleGrouping"
                     class="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition">
                 <i class="fas fa-{{ $groupByPlayer ? 'layer-group' : 'list' }}"></i>
                 <span>{{ $groupByPlayer ? 'Grouped by Player' : 'Show by Map' }}</span>
@@ -66,25 +66,32 @@
                                     @endif
                                 </div>
                             </div>
-                            
+
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                 @foreach($data['records'] as $record)
-                                    <div class="bg-gray-800 rounded p-3 flex items-center gap-3">
-                                        <img src="{{ $this->getLevelImage($record['name']) }}"
-                                             alt="{{ $record['display_name'] }}"
-                                             class="w-8 h-8 rounded object-cover cursor-pointer hover:scale-110 transition-transform"
-                                             wire:click="showImageModal({{ json_encode($record['name']) }}, {{ json_encode($record['display_name']) }})"
-                                             onerror="this.src='/img/levels/default.png'">
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-white text-sm font-medium truncate">{{ $record['display_name'] }}</p>
-                                            <p class="text-yellow-400 text-sm font-semibold">
-                                                {{ number_format($record['world_record']['score'] / 1000, 3) }}s
-                                            </p>
+                                    <div class="relative rounded overflow-hidden h-20 flex items-center"
+                                         style="background-image: url('{{ $this->getLevelImage($record['name']) }}'); background-size: cover; background-position: center;">
+                                        <div class="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/90 to-gray-900/70"></div>
+                                        <div class="relative z-10 flex items-center gap-3 p-3 w-full">
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-white text-sm font-medium truncate drop-shadow-lg">{{ $record['display_name'] }}</p>
+                                                <p class="text-yellow-400 text-sm font-semibold drop-shadow-lg">
+                                                    {{ number_format($record['world_record']['score'] / 1000, 3) }}s
+                                                </p>
+                                            </div>
+                                            <div class="flex items-center gap-1 bg-gray-800 rounded-full">
+                                                <button wire:click="viewTop10('{{ $record['name'] }}')"
+                                                        class="text-blue-400 hover:text-blue-300 text-xs bg-gray-900/50 px-2 py-1 rounded" title="Top 10">
+                                                    <i class="fas fa-list"></i>
+                                                </button>
+                                                @auth
+                                                <button wire:click="viewAroundMe('{{ $record['name'] }}')"
+                                                        class="text-green-400 hover:text-green-300 text-xs bg-gray-900/50 px-2 py-1 rounded" title="Around Me">
+                                                    <i class="fas fa-user-circle"></i>
+                                                </button>
+                                                @endauth
+                                            </div>
                                         </div>
-                                        <button wire:click="viewTop10('{{ $record['name'] }}')"
-                                                class="text-blue-400 hover:text-blue-300 text-xs">
-                                            <i class="fas fa-list"></i>
-                                        </button>
                                     </div>
                                 @endforeach
                             </div>
@@ -107,13 +114,10 @@
                             @foreach($this->getFilteredRankings() as $ranking)
                                 <tr class="border-b border-gray-700 hover:bg-gray-700/50 transition-colors">
                                     <td class="py-3 pr-4">
-                                        <div class="flex items-center gap-3">
-                                            <img src="{{ $this->getLevelImage($ranking['name']) }}"
-                                                 alt="{{ $ranking['display_name'] }}"
-                                                 class="w-10 h-10 rounded object-cover cursor-pointer hover:scale-110 transition-transform"
-                                                 wire:click="showImageModal({{ json_encode($ranking['name']) }}, {{ json_encode($ranking['display_name']) }})"
-                                                 onerror="this.src='/img/levels/default.png'">
-                                            <span class="text-white font-medium text-sm">{{ $ranking['display_name'] }}</span>
+                                        <div class="relative rounded overflow-hidden h-12 flex items-center min-w-[200px]"
+                                             style="background-image: url('{{ $this->getLevelImage($ranking['name']) }}'); background-size: cover; background-position: center;">
+                                            <div class="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/80 to-transparent"></div>
+                                            <span class="relative z-10 text-white font-medium text-sm px-3 drop-shadow-lg">{{ $ranking['display_name'] }}</span>
                                         </div>
                                     </td>
                                     <td class="py-3 pr-4">
@@ -165,7 +169,7 @@
                     </table>
                 </div>
             @endif
-            
+
             @if($this->isLoadingAnyWorldRecords())
                 <div class="mt-4 text-center">
                     <div class="flex items-center justify-center gap-2">
@@ -175,7 +179,7 @@
                 </div>
             @elseif(count($this->getFilteredRankings()) < count($rankings))
                 <div class="mt-4 text-center">
-                    <button wire:click="$set('showOnlyWithScores', false)" 
+                    <button wire:click="$set('showOnlyWithScores', false)"
                             class="text-blue-400 hover:text-blue-300 text-sm transition">
                         Show all {{ count($rankings) }} maps
                     </button>
