@@ -10,7 +10,7 @@
             <div class="mb-6">
                 <img src="{{ asset('/img/new_logo.png') }}"
                      alt="SurfsUp Logo"
-                     class="mx-auto h-24 sm:h-32 md:h-40 lg:h-48 w-auto drop-shadow-2xl transform hover:scale-105 transition-transform duration-300">
+                     class="mx-auto h-32 sm:h-40 md:h-48 lg:h-56 xl:h-64 w-auto drop-shadow-2xl transform hover:scale-105 transition-transform duration-300">
             </div>
 
             <p class="text-xl sm:text-2xl text-gray-200 mb-8 max-w-2xl mx-auto">
