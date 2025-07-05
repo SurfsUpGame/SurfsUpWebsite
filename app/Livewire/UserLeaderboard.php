@@ -19,6 +19,7 @@ class UserLeaderboard extends Component
     public $imageModalVisible = false;
     public $selectedImageUrl = '';
     public $selectedImageName = '';
+    public $showUnrankedMaps = false;
 
     public function mount($steamId, $user)
     {
@@ -214,7 +215,17 @@ class UserLeaderboard extends Component
     public function getFilteredRankings()
     {
         $rankings = array_filter($this->rankings, function($ranking) {
-            return isset($ranking['rank_data']);
+            // Must have rank_data
+            if (!isset($ranking['rank_data'])) {
+                return false;
+            }
+            
+            // If showUnrankedMaps is false, filter out maps where rank_data count is 0
+            if (!$this->showUnrankedMaps && count($ranking['rank_data']) === 0) {
+                return false;
+            }
+            
+            return true;
         });
 
         // Sort by rank (lowest rank number first)
