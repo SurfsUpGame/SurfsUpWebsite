@@ -103,21 +103,6 @@
             @endif
         </div>
 
-        <div>
-            <label for="{{ $isEdit ? 'edit_due_date' : 'due_date' }}" class="block text-sm font-medium mb-2">Due Date (Optional)</label>
-            @if($isEdit)
-                <input type="datetime-local"
-                       id="edit_due_date"
-                       x-model="selectedTask.due_date_value"
-                       class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            @else
-                <input type="datetime-local"
-                       name="due_date"
-                       id="due_date"
-                       value="{{ old('due_date') }}"
-                       class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            @endif
-        </div>
     </div>
 
     <!-- Right Column -->

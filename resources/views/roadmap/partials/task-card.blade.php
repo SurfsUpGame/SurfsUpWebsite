@@ -14,10 +14,8 @@
          creator: '{{ $task->creator ? addslashes($task->creator->name) : 'Unknown' }}',
          creator_avatar: '{{ $task->creator ? $task->creator->avatar : '' }}',
          creator_initials: '{{ $task->creator ? $task->creator->initials() : 'U' }}',
-         due_date: '{{ $task->due_date ? $task->due_date->format('M d, Y g:i A') : 'No due date' }}',
-         due_date_value: '{{ $task->due_date ? $task->due_date->format('Y-m-d\TH:i') : '' }}',
          created_at: '{{ $task->created_at->format('M d, Y g:i A') }}',
-         sprint: '{{ $task->sprint ? addslashes($task->sprint->name) : ($sprint ?? 'No sprint') }}',
+         sprint: '{{ $task->sprint ? addslashes($task->sprint->name) : (isset($sprint) && is_object($sprint) ? addslashes($sprint->name) : 'No sprint') }}',
          sprint_id: {{ $task->sprint_id ?? 'null' }},
          epic: '{{ $task->epic ? addslashes($task->epic->name) : 'No epic' }}',
          epic_id: {{ $task->epic_id ?? 'null' }},
@@ -121,11 +119,5 @@
             </div>
         @endif
 
-        @if($task->due_date)
-            <span>
-                <i class="fas fa-calendar mr-1"></i>
-                {{ $task->due_date->format('M d') }}
-            </span>
-        @endif
     </div>
 </div>

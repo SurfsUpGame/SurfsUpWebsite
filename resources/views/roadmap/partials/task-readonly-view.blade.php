@@ -44,14 +44,6 @@
             </div>
             <span x-show="!selectedTask || !selectedTask.assigned_user || selectedTask.assigned_user === 'Unassigned'" class="text-gray-400 italic">Unassigned</span>
         </div>
-        <div>
-            <h3 class="text-sm font-semibold text-gray-300 mb-1">Due Date</h3>
-            <div class="flex items-center text-gray-200" x-show="selectedTask && selectedTask.due_date && selectedTask.due_date !== 'No due date'">
-                <i class="fas fa-calendar mr-2 text-blue-400"></i>
-                <span x-text="selectedTask ? selectedTask.due_date : ''"></span>
-            </div>
-            <span x-show="!selectedTask || !selectedTask.due_date || selectedTask.due_date === 'No due date'" class="text-gray-400 italic">No due date</span>
-        </div>
     </div>
 
     <div x-show="selectedTask && selectedTask.labels && selectedTask.labels.length > 0">
