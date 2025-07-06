@@ -18,8 +18,8 @@ class SteamLeaderboardService
     public function __construct()
     {
         $this->apiKey = config('steam-auth.api_keys')[0] ?? null;
-        $this->publisherApiKey = env('STEAM_PUBLISHER_API_KEY');
-        $this->appId = env('STEAM_APP_ID', '3454830');
+        $this->publisherApiKey = config('services.steam.api_key');
+        $this->appId = config('services.steam.app_id');
     }
 
     /**
