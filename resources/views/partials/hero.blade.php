@@ -48,8 +48,6 @@
 </section>
 @endguest
 
-@include('partials.live-streams')
-
 <section class="relative bg-gradient-to-b from-gray-900 to-gray-800 pt-24 pb-16">
     @auth
     <div class="absolute inset-0 z-0">
@@ -61,3 +59,5 @@
         @livewire('steam-leaderboard', ['compactView' => true])
     </div>
 </section>
+
+@include('partials.live-streams')
