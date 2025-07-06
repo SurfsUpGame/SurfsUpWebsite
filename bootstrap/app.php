@@ -3,7 +3,6 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Console\Scheduling\Schedule;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -19,27 +18,6 @@ return Application::configure(basePath: dirname(__DIR__))
             '172.18.0.0/16',
             '172.19.0.0/16',
         ]);
-    })
-    ->withSchedule(function (Schedule $schedule) {
-        $schedule->command('twitch:monitor')
-                 ->everyFiveMinutes()
-                 ->withoutOverlapping()
-                 ->runInBackground();
-
-        $schedule->command('leaderboards:cache')
-                 ->hourly()
-                 ->withoutOverlapping()
-                 ->runInBackground();
-
-        $schedule->command('steam:collect-player-count')
-                 ->everyFiveMinutes()
-                 ->withoutOverlapping()
-                 ->runInBackground();
-
-        $schedule->command('steam:cleanup-history')
-                 ->monthly()
-                 ->withoutOverlapping()
-                 ->runInBackground();
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

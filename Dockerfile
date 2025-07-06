@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     nodejs \
     npm \
     supervisor \
+    cron \
     && docker-php-ext-install pdo pdo_mysql zip intl
 
 # Set working directory

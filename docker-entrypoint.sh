@@ -21,6 +21,7 @@ mkdir -p /var/log/supervisor
 mkdir -p /var/run
 touch /var/www/html/storage/logs/queue-worker.log
 touch /var/www/html/storage/logs/laravel.log
+touch /var/www/html/storage/logs/scheduler.log
 
 # Ensure proper permissions
 chown -R www-data:www-data /var/www/html/storage
@@ -28,6 +29,6 @@ chown -R www-data:www-data /var/www/html/bootstrap/cache
 chmod -R 775 /var/www/html/storage
 chmod -R 775 /var/www/html/bootstrap/cache
 
-# Start supervisor (this will manage both PHP-FPM and queue worker)
+# Start supervisor (this will manage PHP-FPM, queue worker, and scheduler)
 echo "Starting supervisor..."
 exec /usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf
