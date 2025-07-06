@@ -10,9 +10,12 @@ done
 echo "Database is up - running migrations"
 php artisan migrate --force
 
-echo "Starting queue worker in background"
-php artisan queue:work --daemon --tries=3 --timeout=300 &
+# Create log directory if it doesn't exist
+mkdir -p /var/www/html/storage/logs
+mkdir -p /var/log/supervisor
+touch /var/www/html/storage/logs/queue-worker.log
+chown -R www-data:www-data /var/www/html/storage/logs
 
-# Start PHP-FPM
-echo "Starting PHP-FPM"
-php-fpm
+# Start supervisor (this will manage both PHP-FPM and queue worker)
+echo "Starting supervisor"
+exec /usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf

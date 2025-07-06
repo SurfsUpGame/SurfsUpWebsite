@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     nodejs \
     npm \
+    supervisor \
     && docker-php-ext-install pdo pdo_mysql zip intl
 
 # Set working directory
@@ -28,6 +29,10 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 RUN git config --global --add safe.directory /var/www/html
 RUN composer install
 RUN npm install && npm run build
+
+# Copy supervisor configuration
+COPY docker/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
+COPY docker/supervisor/laravel-worker.conf /etc/supervisor/conf.d/laravel-worker.conf
 
 # Copy and set permissions for entrypoint script
 COPY docker-entrypoint.sh /usr/local/bin/
