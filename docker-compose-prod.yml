@@ -5,6 +5,7 @@ services:
       dockerfile: Dockerfile
     container_name: surfsup
     restart: unless-stopped
+    entrypoint: /var/www/html/docker-entrypoint.sh
     volumes:
       - .:/var/www/html
     depends_on:
