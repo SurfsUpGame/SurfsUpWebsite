@@ -176,19 +176,24 @@ class MonitorTwitchStreams implements ShouldQueue
 
             // Skip if already posted
             if (isset($cachedStreams[$streamId])) {
+                Log::info('Stream already posted', ['stream_id' => $streamId]);
                 continue;
             }
 
+            Log::info('New stream detected', $stream);
+
+            // Cache the stream
+            $updatedCache[$streamId] = [
+                'id' => $streamId,
+                'user_name' => $stream['user_name'],
+                'user_login' => $stream['user_login'],
+                'title' => $stream['title'],
+                'thumbnail_url' => $stream['thumbnail_url'],
+                'posted_at' => now()->toISOString(),
+            ];
+
             // Post to Discord
             if ($this->postToDiscord($stream, $discordWebhookUrl)) {
-                // Cache the stream
-                $updatedCache[$streamId] = [
-                    'id' => $streamId,
-                    'user_name' => $stream['user_name'],
-                    'title' => $stream['title'],
-                    'posted_at' => now()->toISOString(),
-                ];
-
                 Log::info('Posted new stream to Discord', [
                     'stream_id' => $streamId,
                     'user_name' => $stream['user_name']
@@ -238,7 +243,7 @@ class MonitorTwitchStreams implements ShouldQueue
             ],
             'footer' => [
                 'text' => 'Twitch • Live Stream Notification',
-                'icon_url' => 'https://static-cdn.jtvnw.net/assets/favicon-32-d6025c14e900565d6177.png'
+                'icon_url' => 'https://dev.twitch.tv/docs/assets/favicon-32x32.png'
             ],
             'timestamp' => now()->toISOString()
         ];
