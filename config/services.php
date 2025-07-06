@@ -40,4 +40,15 @@ return [
         'app_id' => env('STEAM_APP_ID', '3454830'),
     ],
 
+    'twitch' => [
+        'client_id' => env('TWITCH_CLIENT_ID'),
+        'client_secret' => env('TWITCH_CLIENT_SECRET'),
+        'game_id' => env('TWITCH_GAME_ID'),
+        'game_title' => env('TWITCH_GAME_TITLE', 'SurfsUp'),
+    ],
+
+    'discord' => [
+        'webhook_url' => env('DISCORD_WEBHOOK_URL'),
+    ],
+
 ];

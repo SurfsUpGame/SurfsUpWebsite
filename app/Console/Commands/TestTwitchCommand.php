@@ -59,13 +59,13 @@ class TestTwitchCommand extends Command
 
     private function checkEnvironmentVariables()
     {
-        $this->info('🔧 Checking environment variables...');
+        $this->info('🔧 Checking configuration variables...');
         
         $requiredVars = [
-            'TWITCH_CLIENT_ID' => env('TWITCH_CLIENT_ID'),
-            'TWITCH_CLIENT_SECRET' => env('TWITCH_CLIENT_SECRET'),
-            'TWITCH_GAME_ID' => env('TWITCH_GAME_ID'),
-            'DISCORD_WEBHOOK_URL' => env('DISCORD_WEBHOOK_URL'),
+            'TWITCH_CLIENT_ID' => config('services.twitch.client_id'),
+            'TWITCH_CLIENT_SECRET' => config('services.twitch.client_secret'),
+            'TWITCH_GAME_ID' => config('services.twitch.game_id'),
+            'DISCORD_WEBHOOK_URL' => config('services.discord.webhook_url'),
         ];
         
         foreach ($requiredVars as $var => $value) {

@@ -58,8 +58,8 @@ class MonitorTwitchStreams implements ShouldQueue
      */
     private function getTwitchAccessToken(): ?string
     {
-        $clientId = env('TWITCH_CLIENT_ID');
-        $clientSecret = env('TWITCH_CLIENT_SECRET');
+        $clientId = config('services.twitch.client_id');
+        $clientSecret = config('services.twitch.client_secret');
 
         if (!$clientId || !$clientSecret) {
             Log::error('Twitch credentials not configured');
@@ -102,8 +102,8 @@ class MonitorTwitchStreams implements ShouldQueue
      */
     private function fetchLiveStreams(string $accessToken): array
     {
-        $clientId = env('TWITCH_CLIENT_ID');
-        $gameId = env('TWITCH_GAME_ID'); // SurfsUp game ID - you'll need to get this
+        $clientId = config('services.twitch.client_id');
+        $gameId = config('services.twitch.game_id');
 
         if (!$gameId) {
             Log::warning('TWITCH_GAME_ID not configured, searching all streams');
@@ -162,7 +162,7 @@ class MonitorTwitchStreams implements ShouldQueue
      */
     private function processNewStreams(array $liveStreams, array $cachedStreams): void
     {
-        $discordWebhookUrl = env('DISCORD_WEBHOOK_URL');
+        $discordWebhookUrl = config('services.discord.webhook_url');
 
         if (!$discordWebhookUrl) {
             Log::warning('Discord webhook URL not configured');
@@ -209,7 +209,7 @@ class MonitorTwitchStreams implements ShouldQueue
      */
     private function postToDiscord(array $stream, string $webhookUrl): bool
     {
-        $gameTitle = env('TWITCH_GAME_TITLE', 'SurfsUp');
+        $gameTitle = config('services.twitch.game_title');
 
         $embed = [
             'title' => "{$stream['user_name']} is now live!",
