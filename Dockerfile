@@ -22,7 +22,6 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Copy supervisor configuration files first
 COPY docker/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
-COPY docker/supervisor/laravel-worker.conf /etc/supervisor/conf.d/laravel-worker.conf
 
 # Copy app source
 COPY . .
