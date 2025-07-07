@@ -60,4 +60,4 @@
     </div>
 </section>
 
-@include('partials.live-streams')
+{{--@include('partials.live-streams')--}}
