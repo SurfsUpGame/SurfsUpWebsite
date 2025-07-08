@@ -3,26 +3,30 @@
      data-task-id="{{ $task->id }}"
      @click="openTaskDetails({
          id: {{ $task->id }},
-         title: '{{ addslashes($task->title) }}',
-         description: '{{ addslashes($task->description ?? '') }}',
-         status: '{{ $task->status->getTitle() }}',
-         status_value: '{{ $task->status->value }}',
-         assigned_user: '{{ $task->user ? addslashes($task->user->name) : 'Unassigned' }}',
+         title: {{ json_encode($task->title) }},
+         description: {{ json_encode($task->description ?? '') }},
+         status: {{ json_encode($task->status->getTitle()) }},
+         status_value: {{ json_encode($task->status->value) }},
+         assigned_user: {{ json_encode($task->user ? $task->user->name : 'Unassigned') }},
          assigned_user_id: {{ $task->user ? $task->user->id : 'null' }},
-         assigned_user_avatar: '{{ $task->user ? $task->user->avatar : '' }}',
-         assigned_user_initials: '{{ $task->user ? $task->user->initials() : 'U' }}',
-         creator: '{{ $task->creator ? addslashes($task->creator->name) : 'Unknown' }}',
-         creator_avatar: '{{ $task->creator ? $task->creator->avatar : '' }}',
-         creator_initials: '{{ $task->creator ? $task->creator->initials() : 'U' }}',
-         created_at: '{{ $task->created_at->format('M d, Y g:i A') }}',
-         sprint: '{{ $task->sprint ? addslashes($task->sprint->name) : (isset($sprint) && is_object($sprint) ? addslashes($sprint->name) : 'No sprint') }}',
+         assigned_user_avatar: {{ json_encode($task->user ? $task->user->avatar : '') }},
+         assigned_user_initials: {{ json_encode($task->user ? $task->user->initials() : 'U') }},
+         creator: {{ json_encode($task->creator ? $task->creator->name : 'Unknown') }},
+         creator_avatar: {{ json_encode($task->creator ? $task->creator->avatar : '') }},
+         creator_initials: {{ json_encode($task->creator ? $task->creator->initials() : 'U') }},
+         created_at: {{ json_encode($task->created_at->format('M d, Y g:i A')) }},
+         sprint: {{ json_encode($task->sprint ? $task->sprint->name : (isset($sprint) && is_object($sprint) ? $sprint->name : 'No sprint')) }},
          sprint_id: {{ $task->sprint_id ?? 'null' }},
-         epic: '{{ $task->epic ? addslashes($task->epic->name) : 'No epic' }}',
+         epic: {{ json_encode($task->epic ? $task->epic->name : 'No epic') }},
          epic_id: {{ $task->epic_id ?? 'null' }},
-         priority: '{{ ucfirst($task->priority ?? 'medium') }}',
-         priority_value: '{{ $task->priority ?? 'medium' }}',
+         priority: {{ json_encode(ucfirst($task->priority ?? 'medium')) }},
+         priority_value: {{ json_encode($task->priority ?? 'medium') }},
          labels: {{ json_encode($task->labels->pluck('name')->toArray()) }},
-         label_ids: {{ json_encode($task->labels->pluck('id')->toArray()) }}
+         label_ids: {{ json_encode($task->labels->pluck('id')->toArray()) }},
+         upvote_count: {{ $task->upvote_count ?? 0 }},
+         downvote_count: {{ $task->downvote_count ?? 0 }},
+         vote_score: {{ $task->vote_score ?? 0 }},
+         user_vote: {{ $task->user_vote ?? 'null' }}
      })">
     <!-- Priority indicator -->
     <div class="flex items-center justify-between mb-2">
@@ -43,7 +47,7 @@
     </div>
 
     @if($task->description)
-        <p class="text-sm text-gray-300 mb-2">{{ Str::limit($task->description, $descriptionLimit ?? 80) }}</p>
+        <p class="text-sm text-gray-300 mb-2">{{ Str::limit(strip_tags($task->description), $descriptionLimit ?? 80) }}</p>
     @endif
 
     <!-- Epic indicator -->

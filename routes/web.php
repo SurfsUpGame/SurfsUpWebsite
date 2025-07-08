@@ -26,6 +26,11 @@ Route::delete('/roadmap/task/{task}', [RoadmapController::class, 'destroy'])->na
 Route::post('/roadmap/task/{task}/vote', [RoadmapController::class, 'vote'])->name('roadmap.task.vote')->middleware('auth');
 Route::post('/roadmap/sprint/{sprint}/end', [RoadmapController::class, 'endSprint'])->name('roadmap.sprint.end')->middleware('auth');
 
+// Suggestion Routes
+Route::post('/roadmap/suggestions', [RoadmapController::class, 'storeSuggestion'])->name('roadmap.suggestions.store')->middleware('auth');
+Route::post('/roadmap/suggestions/{suggestion}/vote', [RoadmapController::class, 'voteSuggestion'])->name('roadmap.suggestions.vote')->middleware('auth');
+Route::post('/roadmap/suggestions/{suggestion}/convert', [RoadmapController::class, 'convertSuggestionToTask'])->name('roadmap.suggestions.convert')->middleware('auth');
+
 // Impersonation Routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin/impersonate', [App\Http\Controllers\ImpersonationController::class, 'userList'])->name('admin.impersonate.list');

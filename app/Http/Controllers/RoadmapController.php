@@ -8,9 +8,12 @@ use App\Models\Sprint;
 use App\Models\Epic;
 use App\Models\Label;
 use App\Models\TaskVote;
+use App\Models\Suggestion;
+use App\Models\SuggestionVote;
 use App\Enums\TaskStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 
 class RoadmapController extends Controller
 {
@@ -44,6 +47,13 @@ class RoadmapController extends Controller
             ];
         });
 
+        // Get suggestions ordered by score
+        $suggestions = Suggestion::with(['user', 'votes'])
+            ->where('converted_to_task', false)
+            ->orderBy('score', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         return view('roadmap', [
             'statuses' => $statuses,
             'tasksByStatus' => $tasksByStatus,
@@ -53,6 +63,7 @@ class RoadmapController extends Controller
             'epics' => $epics,
             'labels' => $labels,
             'showPast' => $showPast,
+            'suggestions' => $suggestions,
         ]);
     }
     
@@ -226,6 +237,150 @@ class RoadmapController extends Controller
             'downvote_count' => $task->downvote_count,
             'user_vote' => $task->user_vote,
             'message' => 'Vote ' . $action . ' successfully'
+        ]);
+    }
+
+    public function storeSuggestion(Request $request)
+    {
+        // Check if user is authenticated
+        if (!auth()->check()) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $validated = $request->validate([
+            'content' => 'required|string|max:280',
+        ]);
+
+        $suggestion = Suggestion::create([
+            'content' => $validated['content'],
+            'user_id' => auth()->id(),
+        ]);
+
+        $suggestion->load('user');
+
+        return response()->json([
+            'success' => true,
+            'suggestion' => $suggestion,
+            'message' => 'Suggestion submitted successfully!'
+        ]);
+    }
+
+    public function voteSuggestion(Request $request, Suggestion $suggestion)
+    {
+        // Check if user is authenticated
+        if (!auth()->check()) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $validated = $request->validate([
+            'vote' => 'required|integer|in:-1,1',
+        ]);
+
+        $userId = auth()->id();
+        $existingVote = SuggestionVote::where('suggestion_id', $suggestion->id)
+                              ->where('user_id', $userId)
+                              ->first();
+
+        if ($existingVote) {
+            if ($existingVote->vote == $validated['vote']) {
+                // Same vote - remove it (toggle off)
+                $existingVote->delete();
+                
+                // Update vote counts
+                if ($validated['vote'] == 1) {
+                    $suggestion->decrement('upvotes');
+                } else {
+                    $suggestion->decrement('downvotes');
+                }
+                
+                $action = 'removed';
+            } else {
+                // Different vote - update it
+                $oldVote = $existingVote->vote;
+                $existingVote->update(['vote' => $validated['vote']]);
+                
+                // Update vote counts
+                if ($oldVote == 1) {
+                    $suggestion->decrement('upvotes');
+                } else {
+                    $suggestion->decrement('downvotes');
+                }
+                
+                if ($validated['vote'] == 1) {
+                    $suggestion->increment('upvotes');
+                } else {
+                    $suggestion->increment('downvotes');
+                }
+                
+                $action = 'updated';
+            }
+        } else {
+            // No existing vote - create new one
+            SuggestionVote::create([
+                'suggestion_id' => $suggestion->id,
+                'user_id' => $userId,
+                'vote' => $validated['vote'],
+            ]);
+            
+            // Update vote counts
+            if ($validated['vote'] == 1) {
+                $suggestion->increment('upvotes');
+            } else {
+                $suggestion->increment('downvotes');
+            }
+            
+            $action = 'added';
+        }
+
+        // Update score
+        $suggestion->updateScore();
+
+        // Refresh suggestion to get updated vote counts
+        $suggestion->refresh();
+
+        return response()->json([
+            'success' => true,
+            'action' => $action,
+            'score' => $suggestion->score,
+            'upvotes' => $suggestion->upvotes,
+            'downvotes' => $suggestion->downvotes,
+            'user_vote' => $suggestion->user_vote,
+            'message' => 'Vote ' . $action . ' successfully'
+        ]);
+    }
+
+    public function convertSuggestionToTask(Request $request, Suggestion $suggestion)
+    {
+        // Check if user has admin or staff role
+        if (!auth()->user()->hasRole(['admin', 'staff'])) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Check if already converted
+        if ($suggestion->converted_to_task) {
+            return response()->json(['error' => 'Suggestion already converted to task'], 400);
+        }
+
+        // Create the task
+        $task = Task::create([
+            'title' => Str::limit($suggestion->content, 255),
+            'description' => $suggestion->content,
+            'status' => TaskStatus::Ideas,
+            'user_id' => auth()->id(), // Assign to current admin/staff
+            'created_by' => $suggestion->user_id, // Keep original author
+            'priority' => 'medium',
+        ]);
+
+        // Mark suggestion as converted
+        $suggestion->update([
+            'converted_to_task' => true,
+            'task_id' => $task->id,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'task' => $task,
+            'message' => 'Suggestion converted to task successfully!'
         ]);
     }
 

@@ -2,7 +2,7 @@
 <div class="space-y-4">
     <div x-show="selectedTask && selectedTask.description">
         <h3 class="text-sm font-semibold text-gray-300 mb-1">Description</h3>
-        <p class="text-gray-200" x-text="selectedTask ? selectedTask.description : ''"></p>
+        <div class="text-gray-200 prose prose-sm prose-invert max-w-none" x-html="selectedTask ? selectedTask.description : ''"></div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -58,6 +58,10 @@
             'showPast' => $showPast
         ])
 
+        @include('roadmap.partials.user-suggestions', [
+            'suggestions' => $suggestions
+        ])
+
     </main>
 
     <!-- Modals outside main container for full screen coverage -->

@@ -128,6 +128,76 @@
                         alert('Error ending sprint');
                     });
                 }
+            },
+            shareTask(taskId) {
+                const shareUrl = `${window.location.origin}/roadmap?task=${taskId}`;
+                
+                // Try to use the Web Share API if available
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Roadmap Task',
+                        text: this.selectedTask ? this.selectedTask.title : 'Check out this task',
+                        url: shareUrl
+                    }).catch((error) => {
+                        // Fallback to clipboard if share fails
+                        this.copyToClipboard(shareUrl);
+                    });
+                } else {
+                    // Fallback to clipboard
+                    this.copyToClipboard(shareUrl);
+                }
+            },
+            copyToClipboard(text) {
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        alert('Link copied to clipboard!');
+                    }).catch(err => {
+                        console.error('Failed to copy: ', err);
+                        // Fallback for older browsers
+                        const textArea = document.createElement('textarea');
+                        textArea.value = text;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        alert('Link copied to clipboard!');
+                    });
+                } else {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    alert('Link copied to clipboard!');
+                }
+            },
+            suggestionContent: '',
+            submitSuggestion() {
+                fetch('{{ route('roadmap.suggestions.store') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        content: this.suggestionContent
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        this.suggestionContent = '';
+                        location.reload(); // Reload to show new suggestion
+                    } else {
+                        alert('Failed to submit suggestion');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error submitting suggestion:', error);
+                    alert('Error submitting suggestion');
+                });
             }
         };
     }
@@ -194,6 +264,21 @@
                     this.innerHTML = '';
                 }
             });
+        }
+        
+        // Check for task parameter in URL and auto-open task
+        const urlParams = new URLSearchParams(window.location.search);
+        const taskId = urlParams.get('task');
+        
+        if (taskId) {
+            // Find the task card with matching ID
+            const taskCard = document.querySelector(`[data-task-id="${taskId}"]`);
+            if (taskCard) {
+                // Trigger click event to open the task details modal
+                setTimeout(() => {
+                    taskCard.click();
+                }, 500); // Small delay to ensure Alpine.js is fully initialized
+            }
         }
     });
 
@@ -374,5 +459,100 @@
             console.error('Error voting:', error);
             alert('Error voting on task');
         });
+    }
+
+    // Voting function for suggestions
+    function voteSuggestion(suggestionId, voteValue) {
+        fetch(`/roadmap/suggestions/${suggestionId}/vote`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                vote: voteValue
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Find the suggestion item and update vote counts
+                const suggestionItem = document.querySelector(`.suggestion-item[data-suggestion-id="${suggestionId}"]`);
+                
+                // Update upvote count
+                const upvoteCount = suggestionItem.querySelector('.suggestion-upvote-count');
+                if (upvoteCount) {
+                    upvoteCount.textContent = data.upvotes;
+                }
+                
+                // Update downvote count
+                const downvoteCount = suggestionItem.querySelector('.suggestion-downvote-count');
+                if (downvoteCount) {
+                    downvoteCount.textContent = data.downvotes;
+                }
+                
+                // Update score
+                const scoreElement = suggestionItem.querySelector('.suggestion-score');
+                if (scoreElement) {
+                    scoreElement.textContent = data.score;
+                }
+                
+                // Update button states
+                const upvoteBtn = suggestionItem.querySelector('.suggestion-upvote');
+                const downvoteBtn = suggestionItem.querySelector('.suggestion-downvote');
+                
+                // Reset button classes
+                upvoteBtn.className = upvoteBtn.className.replace(/(bg-green-600|text-white)/g, '').replace(/\s+/g, ' ').trim();
+                downvoteBtn.className = downvoteBtn.className.replace(/(bg-red-600|text-white)/g, '').replace(/\s+/g, ' ').trim();
+                
+                if (!upvoteBtn.className.includes('bg-gray-600')) {
+                    upvoteBtn.className += ' bg-gray-600 text-gray-300 hover:bg-green-600 hover:text-white';
+                }
+                if (!downvoteBtn.className.includes('bg-gray-600')) {
+                    downvoteBtn.className += ' bg-gray-600 text-gray-300 hover:bg-red-600 hover:text-white';
+                }
+                
+                // Apply active state based on user's current vote
+                if (data.user_vote === 1) {
+                    upvoteBtn.className = upvoteBtn.className.replace(/(bg-gray-600|text-gray-300|hover:bg-green-600|hover:text-white)/g, '').replace(/\s+/g, ' ').trim();
+                    upvoteBtn.className += ' bg-green-600 text-white';
+                } else if (data.user_vote === -1) {
+                    downvoteBtn.className = downvoteBtn.className.replace(/(bg-gray-600|text-gray-300|hover:bg-red-600|hover:text-white)/g, '').replace(/\s+/g, ' ').trim();
+                    downvoteBtn.className += ' bg-red-600 text-white';
+                }
+            } else {
+                alert('Failed to register vote: ' + (data.message || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error voting:', error);
+            alert('Error voting on suggestion');
+        });
+    }
+
+    // Convert suggestion to task
+    function convertSuggestionToTask(suggestionId) {
+        if (confirm('Convert this suggestion to a task? It will be added to the Ideas column.')) {
+            fetch(`/roadmap/suggestions/${suggestionId}/convert`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Suggestion converted to task successfully!');
+                    location.reload();
+                } else {
+                    alert('Failed to convert suggestion: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error converting suggestion:', error);
+                alert('Error converting suggestion to task');
+            });
+        }
     }
 </script>

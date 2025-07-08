@@ -13,9 +13,14 @@
         <div x-show="selectedTask">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-2xl font-bold" x-text="selectedTask ? selectedTask.title : ''"></h2>
-                <button @click="showDetailsModal = false" class="text-gray-400 hover:text-white">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
+                <div class="flex items-center space-x-2">
+                    <button @click="shareTask(selectedTask.id)" class="text-gray-400 hover:text-white" title="Share task">
+                        <i class="fas fa-share-alt text-xl"></i>
+                    </button>
+                    <button @click="showDetailsModal = false" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
             </div>
 
             @auth
