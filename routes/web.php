@@ -24,6 +24,7 @@ Route::patch('/roadmap/task/{task}', [RoadmapController::class, 'update'])->name
 Route::patch('/roadmap/task/{task}/archive', [RoadmapController::class, 'archive'])->name('roadmap.task.archive')->middleware('auth');
 Route::delete('/roadmap/task/{task}', [RoadmapController::class, 'destroy'])->name('roadmap.task.destroy')->middleware('auth');
 Route::post('/roadmap/task/{task}/vote', [RoadmapController::class, 'vote'])->name('roadmap.task.vote')->middleware('auth');
+Route::patch('/roadmap/task/{task}/reorder', [RoadmapController::class, 'reorderTask'])->name('roadmap.task.reorder')->middleware('auth');
 Route::post('/roadmap/sprint/{sprint}/end', [RoadmapController::class, 'endSprint'])->name('roadmap.sprint.end')->middleware('auth');
 
 // Suggestion Routes

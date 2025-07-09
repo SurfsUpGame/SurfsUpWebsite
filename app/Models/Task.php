@@ -21,6 +21,7 @@ class Task extends Model
         'sprint_id',
         'epic_id',
         'priority',
+        'order',
     ];
 
     protected $casts = [

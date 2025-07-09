@@ -14,6 +14,7 @@ use App\Enums\TaskStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class RoadmapController extends Controller
 {
@@ -40,10 +41,12 @@ class RoadmapController extends Controller
             $query->whereIn('name', ['admin', 'staff']);
         })->get();
         
-        // Group tasks by status
+        // Group tasks by status and order by order field (which reflects vote score)
         $tasksByStatus = collect($statuses)->mapWithKeys(function ($status) use ($tasks) {
             return [
-                $status->value => $tasks->where('status', $status)->values()
+                $status->value => $tasks->where('status', $status)
+                    ->sortBy('order')
+                    ->values()
             ];
         });
 
@@ -228,6 +231,9 @@ class RoadmapController extends Controller
 
         // Refresh task to get updated vote counts
         $task->load('votes');
+
+        // Re-order tasks based on new vote scores
+        $this->reorderTasksByVoteScore($task->status, $task->sprint_id);
 
         return response()->json([
             'success' => true,
@@ -496,5 +502,69 @@ class RoadmapController extends Controller
             'summary' => $summary,
             'next_sprint' => $nextSprint ? $nextSprint->name : null
         ]);
+    }
+
+    public function reorderTask(Request $request, Task $task)
+    {
+        // Check if user has admin or staff role
+        if (!auth()->user()->hasRole(['admin', 'staff'])) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $validated = $request->validate([
+            'new_order' => 'required|integer|min:0',
+        ]);
+
+        $newOrder = $validated['new_order'];
+        $oldOrder = $task->order;
+        $status = $task->status;
+        $sprintId = $task->sprint_id;
+
+        // Get all tasks in the same status and sprint
+        $query = Task::where('status', $status);
+        if ($sprintId) {
+            $query->where('sprint_id', $sprintId);
+        } else {
+            $query->whereNull('sprint_id');
+        }
+
+        if ($oldOrder < $newOrder) {
+            // Moving down - decrement order for tasks between old and new position
+            $query->whereBetween('order', [$oldOrder + 1, $newOrder])
+                ->decrement('order');
+        } elseif ($oldOrder > $newOrder) {
+            // Moving up - increment order for tasks between new and old position
+            $query->whereBetween('order', [$newOrder, $oldOrder - 1])
+                ->increment('order');
+        }
+
+        // Update the task's order
+        $task->update(['order' => $newOrder]);
+
+        return response()->json(['success' => true, 'message' => 'Task reordered successfully']);
+    }
+
+    private function reorderTasksByVoteScore($status, $sprintId = null)
+    {
+        // Get tasks for this status/sprint combination ordered by vote score
+        $query = Task::where('status', $status);
+        
+        if ($sprintId) {
+            $query->where('sprint_id', $sprintId);
+        } else {
+            $query->whereNull('sprint_id');
+        }
+        
+        $tasks = $query->withCount(['votes as vote_score' => function($query) {
+                $query->select(DB::raw('COALESCE(SUM(vote), 0)'));
+            }])
+            ->orderByDesc('vote_score')
+            ->orderBy('created_at')
+            ->get();
+
+        // Update order field based on vote score ranking
+        foreach ($tasks as $index => $task) {
+            $task->update(['order' => $index]);
+        }
     }
 }

@@ -324,18 +324,52 @@
             const currentStatus = draggedElement.closest('[id^="column-"]').dataset.status;
             const currentSprintId = draggedElement.closest('[id^="column-"]').dataset.sprint;
 
-            // Don't do anything if dropped in the same column
-            if (newStatus === currentStatus && newSprintId === currentSprintId) return;
-
             // Move the element visually first
             const afterElement = getDragAfterElement(column, e.clientY);
+            let newOrder = 0;
+            
             if (afterElement == null) {
+                // Dropped at the end
+                const lastCard = column.querySelector('.kanban-card:last-child');
+                if (lastCard && lastCard !== draggedElement) {
+                    newOrder = parseInt(lastCard.dataset.order || 0) + 1;
+                }
                 column.appendChild(draggedElement);
             } else {
+                // Dropped before another element
+                newOrder = parseInt(afterElement.dataset.order || 0);
                 column.insertBefore(draggedElement, afterElement);
             }
 
-            // Prepare request body
+            // If dropped in the same column, just reorder
+            if (newStatus === currentStatus && newSprintId === currentSprintId) {
+                // Update order
+                fetch(`/roadmap/task/${taskId}/reorder`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({ new_order: newOrder })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('Task reordered successfully');
+                        location.reload();
+                    } else {
+                        console.error('Failed to reorder task');
+                        location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error reordering task:', error);
+                    location.reload();
+                });
+                return;
+            }
+
+            // Prepare request body for status/sprint change
             const requestBody = {
                 status: newStatus
             };
@@ -360,7 +394,17 @@
             .then(data => {
                 if (data.success) {
                     console.log('Task updated successfully');
-                    location.reload();
+                    // After status change, update the order
+                    fetch(`/roadmap/task/${taskId}/reorder`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({ new_order: newOrder })
+                    })
+                    .then(() => location.reload())
+                    .catch(() => location.reload());
                 } else {
                     console.error('Failed to update task');
                     location.reload();

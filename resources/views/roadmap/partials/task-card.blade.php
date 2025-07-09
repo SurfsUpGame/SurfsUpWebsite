@@ -1,6 +1,7 @@
 <div class="kanban-card bg-gray-700 rounded-lg p-4 hover:bg-gray-600 transition-colors cursor-pointer"
      @auth @if(auth()->user()->hasRole(['admin', 'staff'])) draggable="true" @endif @endauth
      data-task-id="{{ $task->id }}"
+     data-order="{{ $task->order }}"
      @click="openTaskDetails({
          id: {{ $task->id }},
          title: {{ json_encode($task->title) }},
