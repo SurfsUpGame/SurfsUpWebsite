@@ -6,7 +6,7 @@
         <h2 class="text-2xl font-bold mb-4 text-gray-800">
             <i class="fas fa-archive mr-2"></i>Backlog
         </h2>
-        <div class="bg-gray-800 rounded-lg p-6">
+        <div class="bg-gray-800 rounded-lg p-6 max-h-150 overflow-y-auto">
             <div class="space-y-4" id="column-backlog" data-status="backlog">
                 @foreach($tasksByStatus['backlog'] ?? [] as $task)
                     @include('roadmap.partials.task-card', ['task' => $task, 'descriptionLimit' => 120])
@@ -27,7 +27,7 @@
         <h2 class="text-2xl font-bold mb-4 text-gray-800">
             <i class="fas fa-lightbulb mr-2"></i>Ideas
         </h2>
-        <div class="bg-gray-800 rounded-lg p-6">
+        <div class="bg-gray-800 rounded-lg p-6 max-h-150 overflow-y-auto">
             <div class="space-y-4" id="column-ideas" data-status="ideas">
                 @foreach($tasksByStatus['ideas'] ?? [] as $task)
                     @include('roadmap.partials.task-card', ['task' => $task, 'descriptionLimit' => 120])

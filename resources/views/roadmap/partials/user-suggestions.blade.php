@@ -3,7 +3,7 @@
     <div class="bg-gray-800 rounded-lg p-6">
         <h2 class="text-2xl font-bold mb-6 text-white flex items-center">
             <i class="fas fa-lightbulb mr-3 text-yellow-400"></i>
-            User Suggestions
+            Community Suggestions
         </h2>
 
         @auth
@@ -69,7 +69,7 @@
                                 <span>{{ $suggestion->created_at->diffForHumans() }}</span>
                             </div>
                         </div>
-                        
+
                         <div class="flex items-center space-x-3">
                             <!-- Voting Buttons -->
                             @auth
@@ -99,11 +99,11 @@
                                     </div>
                                 </div>
                             @endauth
-                            
+
                             <div class="text-sm text-gray-400">
                                 Score: <span class="suggestion-score font-semibold text-white">{{ $suggestion->score }}</span>
                             </div>
-                            
+
                             <!-- Create as Task Button -->
                             @auth
                                 @if(auth()->user()->hasRole(['admin', 'staff']))
