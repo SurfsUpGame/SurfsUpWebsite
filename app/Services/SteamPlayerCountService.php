@@ -106,10 +106,10 @@ class SteamPlayerCountService
 
     public function getChartData(): array
     {
-        $chartData = PlayerCountHistory::getChartDataForLast24Hours($this->appId);
+        $chartData = PlayerCountHistory::getChartDataForLast72Hours($this->appId);
         
         // If we don't have enough real data, supplement with sample data for demo
-        if (count(array_filter($chartData, fn($entry) => $entry['count'] > 0)) < 6) {
+        if (count(array_filter($chartData, fn($entry) => $entry['count'] > 0)) < 18) {
             $currentCount = $this->getCurrentPlayerCount() ?? 3;
             
             // Fill in missing hours with sample data

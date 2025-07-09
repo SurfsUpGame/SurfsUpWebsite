@@ -8,11 +8,11 @@ use Filament\Widgets\ChartWidget;
 class PlayerCountChartWidget extends ChartWidget
 {
     protected static ?string $heading = 'Player Count Over Time';
-    
+
     protected static ?int $sort = 2;
-    
+
     protected int | string | array $columnSpan = 'full';
-    
+
     // Refresh every 5 minutes
     protected static ?string $pollingInterval = '300s';
 
@@ -20,17 +20,17 @@ class PlayerCountChartWidget extends ChartWidget
     {
         $steamService = new SteamPlayerCountService();
         $chartData = $steamService->getChartData();
-        
+
         $playerCounts = array_column($chartData, 'count');
         $labels = array_column($chartData, 'label');
-        
+
         // If labels are not set, create them from timestamps
         if (empty($labels)) {
             $labels = array_map(function($entry) {
-                return \Carbon\Carbon::parse($entry['timestamp'])->setTimezone('America/New_York')->format('H:00');
+                return \Carbon\Carbon::parse($entry['timestamp'])->setTimezone('America/New_York')->format('M/d H:00');
             }, $chartData);
         }
-        
+
         return [
             'datasets' => [
                 [
@@ -54,7 +54,7 @@ class PlayerCountChartWidget extends ChartWidget
     {
         return 'line';
     }
-    
+
     protected function getOptions(): array
     {
         return [
@@ -81,7 +81,7 @@ class PlayerCountChartWidget extends ChartWidget
                 'x' => [
                     'title' => [
                         'display' => true,
-                        'text' => 'Time (24 Hour EST)',
+                        'text' => 'Time (72 Hour EST)',
                     ],
                 ],
             ],
