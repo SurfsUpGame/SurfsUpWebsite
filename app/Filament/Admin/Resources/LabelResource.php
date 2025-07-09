@@ -18,7 +18,7 @@ class LabelResource extends Resource
     protected static ?string $model = Label::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
-    protected static ?string $navigationGroup = 'Tasks';
+    protected static ?string $navigationGroup = 'Roadmap';
 
     public static function form(Form $form): Form
     {

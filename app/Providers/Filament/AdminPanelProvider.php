@@ -29,20 +29,19 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login(\App\Filament\Admin\Pages\Auth\Login::class)
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Blue,
             ])
+            ->font('Roboto Condensed')
+            ->brandName('SurfsUp')
+            ->brandLogo(asset('img/new_logo.png'))
+            ->brandLogoHeight('5rem')
+            ->favicon(asset('img/favicon.ico'))
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\\Filament\\Admin\\Resources')
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\\Filament\\Admin\\Pages')
             ->pages([
                 Pages\Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\\Filament\\Admin\\Widgets')
-            ->widgets([
-                \App\Filament\Admin\Widgets\CurrentPlayersWidget::class,
-                \App\Filament\Admin\Widgets\PlayerCountChartWidget::class,
-                // Widgets\AccountWidget::class,
-                // Widgets\FilamentInfoWidget::class,
-            ])
             ->userMenuItems([
                 MenuItem::make()
                     ->label('Back to Website')

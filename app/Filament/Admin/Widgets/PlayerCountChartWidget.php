@@ -27,7 +27,7 @@ class PlayerCountChartWidget extends ChartWidget
         // If labels are not set, create them from timestamps
         if (empty($labels)) {
             $labels = array_map(function($entry) {
-                return \Carbon\Carbon::parse($entry['timestamp'])->format('H:00');
+                return \Carbon\Carbon::parse($entry['timestamp'])->setTimezone('America/New_York')->format('H:00');
             }, $chartData);
         }
         
@@ -81,7 +81,7 @@ class PlayerCountChartWidget extends ChartWidget
                 'x' => [
                     'title' => [
                         'display' => true,
-                        'text' => 'Time (24 Hour)',
+                        'text' => 'Time (24 Hour EST)',
                     ],
                 ],
             ],

@@ -18,7 +18,7 @@ class SprintResource extends Resource
     protected static ?string $model = Sprint::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-calendar';
-    protected static ?string $navigationGroup = 'Tasks';
+    protected static ?string $navigationGroup = 'Roadmap';
 
     public static function form(Form $form): Form
     {
