@@ -8,6 +8,13 @@
             openTaskDetails(task) {
                 this.selectedTask = task;
                 this.showDetailsModal = true;
+                // Initialize the rich text editor content after modal opens
+                this.$nextTick(() => {
+                    const editor = document.getElementById('edit-description-editor');
+                    if (editor && task.description) {
+                        editor.innerHTML = task.description;
+                    }
+                });
             },
             archiveTask(taskId) {
                 if (confirm('Are you sure you want to archive this task?')) {
@@ -71,9 +78,13 @@
             updateTask() {
                 if (!this.selectedTask) return;
 
+                // Get the description from the rich text editor
+                const editor = document.getElementById('edit-description-editor');
+                const updatedDescription = editor ? editor.innerHTML : this.selectedTask.description;
+
                 const formData = {
                     title: this.selectedTask.title,
-                    description: this.selectedTask.description,
+                    description: updatedDescription,
                     status: this.selectedTask.status_value,
                     user_id: this.selectedTask.assigned_user_id,
                     due_date: this.selectedTask.due_date_value,

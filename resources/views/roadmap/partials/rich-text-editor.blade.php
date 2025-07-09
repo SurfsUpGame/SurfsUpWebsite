@@ -23,9 +23,7 @@
              contenteditable="true"
              class="w-full px-3 py-2 bg-gray-700 border border-gray-600 border-t-0 rounded-b-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[450px]"
              data-placeholder="Enter task description..."
-             oninput="updateEditHiddenField()"
-             x-html="selectedTask ? selectedTask.description : ''"
-             @click="initEditDescriptionContent()"></div>
+             oninput="updateEditHiddenField()"></div>
         <!-- Hidden field for form submission -->
         <textarea id="edit_description" x-model="selectedTask.description" style="display: none;"></textarea>
     @else
