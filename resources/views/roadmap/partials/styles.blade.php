@@ -67,4 +67,25 @@
     #edit-description-editor ol {
         list-style-type: decimal;
     }
+
+    /* Label selection styles */
+    .label-checkbox:checked + .label-tag {
+        opacity: 1 !important;
+    }
+
+    .label-tag {
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.2s ease;
+    }
+
+    .label-tag:hover {
+        opacity: 1 !important;
+        transform: scale(1.05);
+    }
+
+    /* Remove default ring styles and use custom shadow */
+    .ring-offset-2.ring-offset-gray-800 {
+        box-shadow: 0 0 0 2px #1f2937, 0 0 0 4px var(--ring-color) !important;
+    }
 </style>

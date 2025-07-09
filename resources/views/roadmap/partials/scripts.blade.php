@@ -265,6 +265,22 @@
                 }
             });
         }
+
+        // Handle label click behavior for create form
+        document.querySelectorAll('.label-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const labelTag = this.nextElementSibling;
+                if (this.checked) {
+                    labelTag.classList.add('ring-2', 'ring-offset-2', 'ring-offset-gray-800');
+                    labelTag.classList.remove('opacity-60');
+                    labelTag.style.setProperty('box-shadow', `0 0 0 2px #1f2937, 0 0 0 4px ${labelTag.style.getPropertyValue('--ring-color')}`);
+                } else {
+                    labelTag.classList.remove('ring-2', 'ring-offset-2', 'ring-offset-gray-800');
+                    labelTag.classList.add('opacity-60');
+                    labelTag.style.removeProperty('box-shadow');
+                }
+            });
+        });
         
         // Check for task parameter in URL and auto-open task
         const urlParams = new URLSearchParams(window.location.search);

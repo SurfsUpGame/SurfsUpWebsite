@@ -157,25 +157,34 @@
 
         <div>
             <label class="block text-sm font-medium mb-2">Labels (Optional)</label>
-            <div class="max-h-32 overflow-y-auto bg-gray-700 border border-gray-600 rounded-md p-2">
+            <div class="flex flex-wrap gap-2">
                 @foreach($labels as $label)
-                    <label class="flex items-center space-x-2 py-1">
-                        @if($isEdit)
+                    @if($isEdit)
+                        <label class="inline-flex items-center cursor-pointer">
                             <input type="checkbox"
                                    :checked="selectedTask && selectedTask.label_ids && selectedTask.label_ids.includes({{ $label->id }})"
                                    @change="toggleLabel({{ $label->id }})"
-                                   class="rounded bg-gray-600 border-gray-500 text-blue-600 focus:ring-blue-500">
-                        @else
+                                   class="sr-only">
+                            <span class="inline-block px-3 py-1.5 text-sm rounded-full transition-all duration-200"
+                                  :class="selectedTask && selectedTask.label_ids && selectedTask.label_ids.includes({{ $label->id }}) ? 'ring-2 ring-offset-2 ring-offset-gray-800' : 'opacity-60 hover:opacity-100'"
+                                  style="background-color: {{ $label->color }}80; border: 1px solid {{ $label->color }}40; ring-color: {{ $label->color }};">
+                                {{ $label->name }}
+                            </span>
+                        </label>
+                    @else
+                        <label class="inline-flex items-center cursor-pointer">
                             <input type="checkbox"
                                    name="labels[]"
                                    value="{{ $label->id }}"
                                    {{ in_array($label->id, old('labels', [])) ? 'checked' : '' }}
-                                   class="rounded bg-gray-600 border-gray-500 text-blue-600 focus:ring-blue-500">
-                        @endif
-                        <span class="inline-block px-2 py-1 text-xs rounded" style="background-color: {{ $label->color }}20; color: {{ $label->color }}; border: 1px solid {{ $label->color }}30;">
-                            {{ $label->name }}
-                        </span>
-                    </label>
+                                   class="sr-only label-checkbox"
+                                   data-label-id="{{ $label->id }}">
+                            <span class="inline-block px-3 py-1.5 text-sm rounded-full transition-all duration-200 label-tag {{ in_array($label->id, old('labels', [])) ? 'ring-2 ring-offset-2 ring-offset-gray-800' : 'opacity-80 hover:opacity-100' }}"
+                                  style="background-color: {{ $label->color }}80; border: 1px solid {{ $label->color }}40; --ring-color: {{ $label->color }};">
+                                {{ $label->name }}
+                            </span>
+                        </label>
+                    @endif
                 @endforeach
             </div>
         </div>

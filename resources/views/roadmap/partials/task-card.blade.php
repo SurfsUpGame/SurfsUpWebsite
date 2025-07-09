@@ -64,7 +64,7 @@
     @if($task->labels->count() > 0)
         <div class="mb-2 flex flex-wrap gap-1">
             @foreach($task->labels as $label)
-                <span class="inline-block px-2 py-1 text-xs rounded" style="background-color: {{ $label->color }}20; color: {{ $label->color }}; border: 1px solid {{ $label->color }}30;">
+                <span class="inline-block px-2 py-1 text-xs rounded" style="background-color: {{ $label->color }}80; border: 1px solid {{ $label->color }}40;">
                     {{ $label->name }}
                 </span>
             @endforeach
