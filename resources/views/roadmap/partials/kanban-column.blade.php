@@ -1,5 +1,5 @@
 <div class="kanban-column">
-    <div class="bg-gray-800 rounded-lg p-4">
+    <div class="bg-gray-800 rounded-lg p-4 max-h-150 overflow-y-auto">
         <h3 class="text-xl font-semibold mb-4 text-{{ $status->getColor() }}-400">
             {{ $status->getTitle() }} ({{ $tasks->count() }})
         </h3>
