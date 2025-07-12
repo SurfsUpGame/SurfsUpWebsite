@@ -1,0 +1,49 @@
+SURFSUP - FACT SHEET
+====================
+
+GAME INFORMATION
+----------------
+Title: SurfsUp
+Genre: Multiplayer Precision Platformer
+Platform: PC (Windows, Mac, Linux)
+Release Date: TBA
+Price: Free-to-Play
+ESRB Rating: E for Everyone
+
+DEVELOPER INFORMATION
+--------------------
+Developer: [Your Studio Name]
+Location: [Your Location]
+Founded: [Year]
+Website: www.surfsupgame.com
+
+KEY FEATURES
+------------
+• High-speed momentum-based movement
+• Competitive multiplayer racing
+• Global leaderboards and rankings
+• Regular content updates
+• Character customization
+• Level editor and workshop
+• Cross-platform support
+
+SYSTEM REQUIREMENTS (MINIMUM)
+----------------------------
+OS: Windows 10 64-bit
+Processor: Intel i3 or AMD equivalent
+Memory: 4 GB RAM
+Graphics: DirectX 11 compatible GPU
+Storage: 2 GB available space
+Network: Broadband Internet connection
+
+CONTACT
+-------
+Press Inquiries: press@surfsupgame.com
+Business: business@surfsupgame.com
+Support: support@surfsupgame.com
+
+SOCIAL MEDIA
+------------
+Twitter: @SurfsUpGame
+Discord: discord.gg/surfsup
+Steam: store.steampowered.com/app/surfsup

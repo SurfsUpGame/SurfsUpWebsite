@@ -1,0 +1,15 @@
+LOGO PLACEHOLDER
+================
+
+This folder should contain:
+- surfsup-logo-color.png (1920x1080)
+- surfsup-logo-color.svg
+- surfsup-logo-white.png (1920x1080) 
+- surfsup-logo-white.svg
+- surfsup-logo-black.png (1920x1080)
+- surfsup-logo-black.svg
+- surfsup-icon-512.png (512x512)
+- surfsup-icon-256.png (256x256)
+- surfsup-icon-128.png (128x128)
+
+Please add your actual logo files here.

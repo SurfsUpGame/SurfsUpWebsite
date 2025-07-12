@@ -1,0 +1,18 @@
+SCREENSHOTS PLACEHOLDER
+=======================
+
+This folder should contain high-resolution gameplay screenshots:
+- screenshot-01.jpg (1920x1080 or higher)
+- screenshot-02.jpg (1920x1080 or higher)
+- screenshot-03.jpg (1920x1080 or higher)
+- screenshot-04.jpg (1920x1080 or higher)
+- screenshot-05.jpg (1920x1080 or higher)
+
+Recommended screenshot subjects:
+- Action gameplay showing speed
+- Multiplayer racing
+- Character customization
+- Level editor
+- Different environments/maps
+
+Please add your actual screenshot files here.

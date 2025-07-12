@@ -1,0 +1,29 @@
+ABOUT SURFSUP
+=============
+
+SurfsUp is a free-to-play high-speed multiplayer precision platformer that pushes the boundaries of momentum-based movement and competitive racing. 
+
+THE GAME
+--------
+In SurfsUp, players master physics-defying moves to race through challenging courses at breakneck speeds. Every jump, slide, and wall-run must be perfectly timed as you compete against players worldwide for the top spot on the leaderboards.
+
+CORE GAMEPLAY
+-------------
+• Momentum is everything - maintain your speed through precise inputs
+• Chain moves together for maximum velocity
+• Find the perfect racing line through each course
+• Compete in real-time multiplayer races
+• Set personal records in time trials
+• Create and share custom maps
+
+WHAT MAKES SURFSUP UNIQUE
+------------------------
+Unlike traditional platformers, SurfsUp focuses entirely on speed and precision. There are no enemies to defeat or collectibles to gather - just you, the course, and the clock. The game rewards mastery through its deep movement system that's easy to learn but takes dedication to perfect.
+
+COMMUNITY FOCUS
+--------------
+SurfsUp is built with the community in mind. Regular tournaments, featured community maps, and seasonal events keep the game fresh. The integrated level editor allows players to create and share their own challenges, ensuring endless content.
+
+FAIR FREE-TO-PLAY
+----------------
+SurfsUp is truly free-to-play. All gameplay content and features are available to everyone. Optional cosmetic items allow players to customize their appearance while supporting ongoing development.
