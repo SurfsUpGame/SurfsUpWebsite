@@ -61,8 +61,8 @@ class SteamLeaderboardService
                         foreach ($data['response']['leaderboards'] as $leaderboard) {
                             $leaderboards[] = [
                                 'id' => $leaderboard['id'] ?? null,
-                                'name' => $leaderboard['name'] ?? 'Unknown',
-                                'display_name' => $leaderboard['display_name'] ?? $leaderboard['name'] ?? 'Unknown',
+                                'name' => str_replace('Launch_', '', $leaderboard['name'] ?? 'Unknown'),
+                                'display_name' => str_replace('Launch_', '', $leaderboard['display_name'] ?? $leaderboard['name'] ?? 'Unknown'),
                                 'sort_method' => $leaderboard['sort_method'] ?? 'descending',
                                 'display_type' => $leaderboard['display_type'] ?? 'numeric',
                                 'entry_count' => $leaderboard['entry_count'] ?? 0,
