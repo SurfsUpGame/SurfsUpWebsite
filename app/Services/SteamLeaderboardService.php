@@ -59,14 +59,18 @@ class SteamLeaderboardService
                     if (isset($data['response']['leaderboards'])) {
                         $leaderboards = [];
                         foreach ($data['response']['leaderboards'] as $leaderboard) {
-                            $leaderboards[] = [
-                                'id' => $leaderboard['id'] ?? null,
-                                'name' => str_replace('Launch_', '', $leaderboard['name'] ?? 'Unknown'),
-                                'display_name' => str_replace('Launch_', '', $leaderboard['display_name'] ?? $leaderboard['name'] ?? 'Unknown'),
-                                'sort_method' => $leaderboard['sort_method'] ?? 'descending',
-                                'display_type' => $leaderboard['display_type'] ?? 'numeric',
-                                'entry_count' => $leaderboard['entry_count'] ?? 0,
-                            ];
+                            // Only include leaderboards with "v1.1_" in the name
+                            $leaderboardName = $leaderboard['name'] ?? '';
+                            if (strpos($leaderboardName, 'v1.1_') !== false) {
+                                $leaderboards[] = [
+                                    'id' => $leaderboard['id'] ?? null,
+                                    'name' => str_replace('v1.1_', '', $leaderboard['name'] ?? 'Unknown'),
+                                    'display_name' => str_replace('v1.1_', '', $leaderboard['display_name'] ?? $leaderboard['name'] ?? 'Unknown'),
+                                    'sort_method' => $leaderboard['sort_method'] ?? 'descending',
+                                    'display_type' => $leaderboard['display_type'] ?? 'numeric',
+                                    'entry_count' => $leaderboard['entry_count'] ?? 0,
+                                ];
+                            }
                         }
 
                         // Log::info('Successfully fetched Steam leaderboards', ['count' => count($leaderboards)]);
@@ -325,15 +329,15 @@ class SteamLeaderboardService
     public function getWorldRecord(string $leaderboardId): ?array
     {
         $cacheKey = "steam_leaderboard_world_record_{$leaderboardId}";
-        
+
         // Cache for 1 hour
         return Cache::remember($cacheKey, 3600, function () use ($leaderboardId) {
             $entries = $this->getLeaderboardEntries($leaderboardId, 1);
-            
+
             if (!empty($entries)) {
                 return $entries[0];
             }
-            
+
             return null;
         });
     }
