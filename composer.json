@@ -9,12 +9,15 @@
         "php": "^8.2",
         "bezhansalleh/filament-shield": "^3.3",
         "filament/filament": "^3.3",
+        "filament/spatie-laravel-translatable-plugin": "^3.2",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
         "livewire/flux": "^2.1.1",
         "livewire/volt": "^1.7.0",
+        "matt-daneshvar/laravel-survey": "^0.5.1",
         "mokhosh/filament-kanban": "^2.10",
-        "spatie/laravel-backup": "^9.3"
+        "spatie/laravel-backup": "^9.3",
+        "tapp/filament-survey": "^3.0"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.15",

@@ -45,3 +45,6 @@ Route::prefix('api')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+Route::get('/feedback/{name}', [\App\Http\Controllers\SurveyController::class, 'show'])->name('survey.show');
+Route::post('/feedback/{survey}', [\App\Http\Controllers\SurveyController::class, 'store'])->name('survey.store')->middleware('auth');

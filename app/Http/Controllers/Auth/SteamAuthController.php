@@ -30,6 +30,7 @@ final class SteamAuthController
 
     public function login(): RedirectResponse
     {
+        session(['url.intended' => url()->previous()]);
         return $this->redirector->to($this->steam->getAuthUrl());
     }
 

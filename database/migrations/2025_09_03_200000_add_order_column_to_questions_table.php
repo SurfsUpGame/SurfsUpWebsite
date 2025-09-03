@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('tasks', function (Blueprint $table) {
-            $table->timestamp('archived_at')->nullable();
+        Schema::table(config('survey.database.tables.questions'), function (Blueprint $table) {
+            $table->integer('order')->default(0);
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('tasks', function (Blueprint $table) {
-            $table->dropColumn('archived_at');
+        Schema::table(config('survey.database.tables.questions'), function (Blueprint $table) {
+            $table->dropColumn('order');
         });
     }
 };
