@@ -59,13 +59,13 @@ class SteamLeaderboardService
                     if (isset($data['response']['leaderboards'])) {
                         $leaderboards = [];
                         foreach ($data['response']['leaderboards'] as $leaderboard) {
-                            // Only include leaderboards with "v1.1_" in the name
+                            // Only include leaderboards with "OU25_" in the name
                             $leaderboardName = $leaderboard['name'] ?? '';
-                            if (strpos($leaderboardName, 'v1.1_') !== false) {
+                            if (strpos($leaderboardName, 'OU25_') !== false) {
                                 $leaderboards[] = [
                                     'id' => $leaderboard['id'] ?? null,
-                                    'name' => str_replace('v1.1_', '', $leaderboard['name'] ?? 'Unknown'),
-                                    'display_name' => str_replace('v1.1_', '', $leaderboard['display_name'] ?? $leaderboard['name'] ?? 'Unknown'),
+                                    'name' => str_replace('OU25_', '', $leaderboard['name'] ?? 'Unknown'),
+                                    'display_name' => str_replace('OU25_', '', $leaderboard['display_name'] ?? $leaderboard['name'] ?? 'Unknown'),
                                     'sort_method' => $leaderboard['sort_method'] ?? 'descending',
                                     'display_type' => $leaderboard['display_type'] ?? 'numeric',
                                     'entry_count' => $leaderboard['entry_count'] ?? 0,
